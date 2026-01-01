@@ -21,6 +21,7 @@ out/
 .vite/
 .cache/
 .swc/
+.pnpm-store/
 
 # Test outputs
 coverage/
@@ -37,6 +38,8 @@ pnpm-debug.log*
 # IDE files
 .idea/
 .vscode/
+.fleet/
+.zed/
 *.iml
 *.swp
 *.swo

@@ -15,6 +15,7 @@
 .cache/
 .turbo/
 .vite/
+.pnpm-store/
 *.tsbuildinfo
 
 # Logs
@@ -26,3 +27,9 @@ yarn-error.log*
 
 # Env files
 .env*
+
+# IDE files
+.idea/
+.vscode/
+.fleet/
+.zed/
