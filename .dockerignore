@@ -1,0 +1,40 @@
+# Docker 이미지에서 제외할 항목(프론트엔드 기준)
+
+# Git/IDE/OS
+.git/
+.gitignore
+.editorconfig
+.idea/
+.vscode/
+*.iml
+.DS_Store
+Thumbs.db
+
+# 문서
+*.md
+docs/
+
+# 환경/비밀
+.env*
+secrets/
+
+# 의존성/빌드 산출물/캐시
+frontend/node_modules/
+frontend/.next/
+frontend/out/
+frontend/.vercel/
+frontend/.swc/
+frontend/.cache/
+frontend/.turbo/
+frontend/.vite/
+coverage/
+test-results/
+test-output/
+
+# 로그/임시
+*.log
+.cache/
+.tmp/
+tmp/
+logs/
+.history/
