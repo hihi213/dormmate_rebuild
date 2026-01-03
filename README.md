@@ -17,7 +17,7 @@
 
 **DormMate**는 기숙사 내 공용 시설(냉장고, 세탁실 등) 관리의 불편함을 해결하는 웹 서비스입니다.
 
-기존 버전(V1)은 AI 도구를 활용해 빠르게 기획을 검증했으나, 그 과정에서 **제 주관보다는 AI의 기술적 결정에 의존**하는 비중이 컸습니다. 이에 따라 **"내 손으로 직접 구현해야 진짜 내 실력이 된다"**는 판단하에, 기존 프론트엔드 UI만 유지하고 **백엔드와 데이터베이스를 주도적으로 재설계(Rebuild)**하는 프로젝트를 시작했습니다.
+기존 버전(V1)은 AI 도구를 활용해 빠르게 기획을 검증했으나, 그 과정에서 **제 주관보다는 AI의 기술적 결정에 의존**하는 비중이 컸습니다. 이에 따라 **"내 손으로 직접 구현해야 진짜 내 실력이 된다"**는 판단하에, UI/요구(API)는 고정하고 **DB/도메인 구조는 주도적으로 재설계**하는 프로젝트를 시작했습니다.
 
 * **개발 기간:** 2026.01 ~ (진행 중)
 * **개발 인원:** 백엔드 1인 (기존 프론트엔드 리소스 활용)
@@ -32,6 +32,7 @@
 | **Spec-Matching** | UI가 요구하는 JSON 구조(API)를 분석하여 백엔드 구현 | **Gap Analysis** 수행 |
 | **Independent DB** | API 요구사항에 끌려다니지 않고, **데이터 무결성을 위한 독자적 DB 설계** | 정규화 & FK 제약조건 |
 | **Documentation** | 코드 작성 전 **'설계'**, 작성 후 **'회고'**를 남기는 기록 중심 개발 | Obsidian 활용 |
+| **Contract-First** | UI Flow 기준의 API 스펙을 고정 계약으로 보고, 그에 맞춰 구현 | DTO 선확정 → DB 설계/매핑 |
 
 ## 3. 🛠️ 아키텍처 및 기술 스택 (Architecture)
 
@@ -74,7 +75,8 @@ DormMate/                      (Git Root)
 
 ### ⭐ 주요 기록 (Highlights)
 
-* 📄 **[UI Flow 분석 및 API 역설계](./docs/00_Blueprint/UI_Flow_Analysis.md)** : 기존 화면 흐름을 분석하여 백엔드 요구사항을 도출한 문서
+* 📄 **[UI Flow 분석 및 API 역설계](./docs/00_Blueprint/UI_Flow_Analysis.md)** : 화면 흐름 참고 문서
+* 📄 **[구현된 API 목록](./docs/20_Deliverables/03_API_Specification.md)** : API 계약 기준 문서
 * 📄 **[최종 ERD 설계](./docs/20_Deliverables/02_ERD_&_Schema.md)** : 프론트엔드 데이터 구조와 별개로 정규화된 DB 설계
 * 📄 **[기술적 의사결정](./docs/20_Deliverables/04_Tech_Decisions.md)** : 기술 스택 선정 및 아키텍처 설계의 근거
 
@@ -83,39 +85,41 @@ DormMate/                      (Git Root)
 본 프로젝트는 아래 5단계 Phase에 따라 순차적으로 구현됩니다.
 *(상세 기능 명세는 [📂 00_Blueprint/Feature_Inventory.md](./docs/00_Blueprint/Feature_Inventory.md)에서 확인 가능합니다.)*
 
-### Phase 1. 물품 관리 (Inventory) - *Current*
+### Phase 1. 물품 관리 (Inventory)
 
-> *"Spec-Matching: 프론트엔드 JSON 구조와 DB 정규화 간의 간극 해결"*
+> *"단순화 후 점진 확장: 포장/물품 구조 유지 + 필드 최소화"*
 
-* 물품 등록/조회/수정/삭제 (CRUD)
-* 냉장/냉동 타입 구분 및 슬롯(Slot) 매핑 전략 수립
+* 포장/물품 CRUD (등록/조회/수정/삭제)
+* 목록/상세/등록/수정 화면 중심
+* 간단 검색: 포장명 기준
 
 ### Phase 2. 로그인/회원 시스템 (Auth)
 
-> *"Stateless Architecture: JWT 기반 인증 도입"*
+> *"계정·세션 기반 인증부터 안정적으로"*
 
-* 사용자별 데이터 격리 (Security Context)
-* 기존 UI의 Auth Guard와 연동되는 백엔드 인증 로직 구현
+* 회원가입/로그인/세션
+* 사용자별 물품 격리 
 
 ### Phase 3. 냉장고 검사 (Inspection)
 
-> *"Complex Business Logic: 검사 세션 및 이력 관리"*
+> *"검사 세션의 시작-잠금-제출 흐름 구축"*
 
-* 층별장 전용 검사 프로세스 구현 (상태 머신)
-* 위반 물품 조치(폐기/경고) 트랜잭션 처리
+* 검사 세션 시작/잠금/제출
+* 조치 기록(경고/폐기/통과)
 
 ### Phase 4. 관리자 기능 (Admin)
 
-> *"Operational Excellence: 운영 효율화"*
+> *"운영 조회 중심의 관리자 기능"*
 
-* 칸 재배분 시뮬레이션 로직
-* 데이터 감사(Audit) 로그 및 운영 대시보드 API
+* 전체 물품 조회/검색/삭제
+* 검사 이력 조회, 역할 관리
+
 
 ### Phase 5. 알림 유틸리티 (Notification)
-> *"Async Processing: 비동기 알림 처리"*
+> *"푸시 이전 단계: 알림 저장/읽음 처리"*
 
-* 유통기한 임박 및 검사 결과 알림
-* Polling vs SSE(Server-Sent Events) 기술 검토 및 적용
+* 알림 저장/읽음 처리 (Push는 2차 확장)
+
 
 ## 6. 🏃 실행 방법 (How to run)
 

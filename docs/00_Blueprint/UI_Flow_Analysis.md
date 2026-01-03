@@ -1,8 +1,6 @@
 # UI Flow (Reverse-Engineered)
 
 이 문서는 현재 UI(Next.js `frontend/app`) 기준으로 화면 흐름을 역설계한 정리본입니다.
-로드맵 단계(1~5)에 맞춰 화면과 사용자 흐름을 묶었습니다.
-
 ## 공통 네비게이션/규칙
 - 하단 탭: `냉장고(/fridge)`, `세탁실(/laundry)`, `홈(/)`, `도서관(/library)`, `다목적실(/study)`
 - 로그인 필요 화면은 `AuthGuard`로 보호됨
