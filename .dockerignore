@@ -47,8 +47,8 @@ backend/.idea/
 AGENTS.md
 #obsidian
 docs/개발플로우.md
-docs/.obsidian/*
-docs/setting/*
+docs/.obsidian
+docs/Settings
 # 로그/임시
 *.log
 .cache/
