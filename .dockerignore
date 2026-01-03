@@ -31,6 +31,24 @@ coverage/
 test-results/
 test-output/
 
+# --- Frontend (Node) ---
+frontend/node_modules/
+frontend/.next/
+frontend/out/
+frontend/.env.local
+
+# --- Backend (Java/Gradle) ---
+backend/build/
+backend/.gradle/
+backend/out/
+backend/.idea/
+
+#codex
+AGENTS.md
+#obsidian
+docs/개발플로우.md
+docs/.obsidian/*
+docs/setting/*
 # 로그/임시
 *.log
 .cache/
