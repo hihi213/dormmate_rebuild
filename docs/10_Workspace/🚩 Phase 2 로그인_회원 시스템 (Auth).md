@@ -11,24 +11,28 @@ tags:
 * 회원가입/로그인/세션
 * 사용자별 물품 격리
 
-### 🤝 API 계약 고정 (Immutable Contract)
-> **변경 불가:** `00_Blueprint/UI_Flow_Analysis.md`의 요구사항을 기반으로 엔드포인트와 필드명을 확정합니다.
+## 1. 📋 계약 정의 (Contract Definition)
 
-- [ ] **Endpoint:** (예: `GET /fridge/bundles`)
-- [ ] **DTO Policy:** (예: `BundleResponse`는 `items` 리스트를 포함하는 중첩 구조)
-- [ ] **Constraint:** (예: 필드명은 camelCase, 날짜는 ISO-8601 준수)
+> **Goal:** UI Flow 및 API 명세를 분석하여 **변경 불가능한 계약(DTO)**을 먼저 확정합니다.
+> **Input Source:** `20_Deliverables/03_API_Specification.md`
+
+- [ ] **Target Endpoint:** (예: `GET /fridge/bundles`)
+* [ ] **Request DTO:** (예: `BundleCreateRequest` - Validation 포함)
+	* *Check:* 프론트엔드 페이로드와 필드명/타입이 100% 일치하는가?
+* [ ] **Response DTO:** (예: `BundleResponse` - 화면 출력용)
+	* *Check:* DB 구조를 노출하지 않고, 화면에 필요한 데이터만 담았는가?
 
 ---
 
-## 2. 🧠 매핑 전략 (Mapping Strategy)
-> **Core Logic:** 고정된 계약(DTO)과 이상적인 DB(3NF) 사이의 간극을 어떻게 메울 것인가?
+## 3. 🧠 매핑 로직 (Implementation Strategy)
 
-- **DB 설계 방향:** (예: 데이터 무결성을 위해 `Bundle`과 `Item` 완전 분리)
-- **Mapping Strategy:**
-    - **Read:** (예: QueryDSL Projections 사용하여 DTO로 즉시 변환)
-    - **Write:** (예: Service 레이어에서 `BundleDTO`를 분해하여 2개의 Entity로 저장)
-- **Critical Point:** (예: N+1 문제 방지를 위한 `BatchSize` 적용)
+> **Goal:** 위에서 정의한 [1. 계약]과 [2. 설계] 사이의 간극을 메우는 **Service 로직**을 구상합니다.
 
+* **Mapping Method:** (예: `Stream API`를 사용하여 수동 변환 / Builder 패턴 사용)
+* **Transaction Scope:** (예: 조회만 하므로 `@Transactional(readOnly = true)` 적용)
+* **Query Strategy:**
+	* [ ] JPA 기본 메서드 (`findById`) 사용
+	* [ ] 복잡한 조회 시 QueryDSL 도입 검토 (Trigger 상황인지 체크)
 ---
 
 ## 3. 🎯 Task 일정 (Priority)

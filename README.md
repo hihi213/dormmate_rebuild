@@ -6,9 +6,8 @@
 <div align="center">
 
 ![Java](https://img.shields.io/badge/Java-17-007396?style=flat-square&logo=java&logoColor=white)
-![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.2-6DB33F?style=flat-square&logo=springboot&logoColor=white)
-![MySQL](https://img.shields.io/badge/MySQL-8.0-4479A1?style=flat-square&logo=mysql&logoColor=white)
-![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15-4169E1?style=flat-square&logo=postgresql&logoColor=white)
+![Spring Boot](https://img.shields.io/badge/Spring%20Boot-4.x-6DB33F?style=flat-square&logo=springboot&logoColor=white)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-4169E1?style=flat-square&logo=postgresql&logoColor=white)
 ![Obsidian](https://img.shields.io/badge/Docs-Obsidian-483699?style=flat-square&logo=obsidian&logoColor=white)
 
 </div>
@@ -54,11 +53,25 @@ DormMate/                      (Git Root)
 ```
 
 ### 3-2. 기술 스택 (Backend)
+Backend: Java 17, Spring Boot 4.x, Spring Data JPA, Bean Validation
+Auth: Spring Security(세션 기반) + BCrypt
+DB: PostgreSQL (로컬은 docker-compose)
+Frontend: Next.js(레거시 유지) + 기존 호출 방식 유지(필요한 곳만 최소 수정)
+문서/계약: 현재 03_API_Specification.md 고정
 
-* **Framework:** Spring Boot 3.x, Spring Data JPA
-* **Database:** MySQL 8.0 (Local/Prod), H2 (Test)
-* **Build:** Gradle
-* **Tool:** IntelliJ IDEA, Obsidian (Documentation)
+
+### 3-3. 기술 도입 로드맵
+
+|**단계**|**상황 (Trigger)**|**불편함 (Pain Point)**|**해결 기술 (Solution)**|
+|---|---|---|---|
+|**P1**|복잡한 검색 필터 구현|코드가 지저분하고 오타 발생|**QueryDSL**|
+|**P2**|서버 재배포 시 로그아웃|사용자 경험 저하 (데이터 증발)|**Redis (Session)**|
+|**P3**|동시 클릭/중복 요청|데이터 정합성 깨짐 (Race Condition)|**Redis (Lock)**|
+|**Common**|DB 스키마 변경 누락|배포 시 에러 발생 위험|**Flyway**|
+|**Common**|수동 배포의 번거로움|시간 낭비 및 실수 발생|**GitHub Actions**|
+
+👉 **[상세 기술 도입 배경 및 아키텍처 문서 보러가기](./docs/20_Deliverables/01_System_Architecture.md)**
+
 
 ## 4. 📂 개발 문서 (Docs)
 

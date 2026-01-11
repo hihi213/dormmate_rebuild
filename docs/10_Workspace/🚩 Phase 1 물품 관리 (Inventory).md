@@ -13,30 +13,63 @@ tags:
 * 목록/상세/등록/수정 화면 중심
 * 간단 검색: 포장명 기준
 
-### 🤝 API 계약 고정 (Immutable Contract)
-> **변경 불가:** `00_Blueprint/UI_Flow_Analysis.md`의 요구사항을 기반으로 엔드포인트와 필드명을 확정합니다.
+## 1. 📋 계약 정의 (Contract Definition)
 
-- [ ] **Endpoint:** (예: `GET /fridge/bundles`)
-- [ ] **DTO Policy:** (예: `BundleResponse`는 `items` 리스트를 포함하는 중첩 구조)
-- [ ] **Constraint:** (예: 필드명은 camelCase, 날짜는 ISO-8601 준수)
+> **Goal:** UI Flow 및 API 명세를 분석하여 **변경 불가능한 계약(DTO)**을 먼저 확정합니다.
+> **Input Source:** `20_Deliverables/03_API_Specification.md`
+- [ ] **Target Endpoint:** (예: `GET /fridge/bundles`)
+	- GET /fridge/slots — 칸 목록 조회(필터: floor, view, page, size)
+	- GET /fridge/bundles — 포장 목록 조회(필터: slotId, owner, status, search, page, size)
+	- POST /fridge/bundles — 포장 생성(허용량 초과 시 422 CAPACITY_EXCEEDED)
+	- GET /fridge/bundles/{bundleId} — 포장 상세 조회
+	- PATCH /fridge/bundles/{bundleId} — 포장 수정
+	- DELETE /fridge/bundles/{bundleId} — 포장 삭제
+	- POST /fridge/bundles/{bundleId}/items — 포장에 물품 추가
+	- PATCH /fridge/items/{itemId} — 물품 수정
+	- DELETE /fridge/items/{itemId} — 물품 삭제
+* [ ] **Request DTO:** (예: `BundleCreateRequest` - Validation 포함)
+	* *Check:* 프론트엔드 페이로드와 필드명/타입이 100% 일치하는가?
+* [ ] **Response DTO:** (예: `BundleResponse` - 화면 출력용)
+	* *Check:* DB 구조를 노출하지 않고, 화면에 필요한 데이터만 담았는가?
 
+### 화면 흐름과 요구사항을 기반으로 엔드포인트와 필드명을 확정합니다.
+
+**1) 엔드포인트(Endpoint) 개념 힌트**
+
+- 리소스는 무엇이고, 동작은 무엇인가요?
+	- 우리가 관리하고 싶은 대상인 리소스는 냉장고칸, 포장, 물품
+	- 동작은 crud, 조회, 동작이다.
+- 리소스의 “집합”과 “단일 항목”을 어떻게 구분할까요?
+- “포장 안에 물품”이라는 관계는 URL 구조에 어떻게 표현하는 게 자연스러울까요?
+
+**2) 필드명(Field) 설계 힌트**
+
+- 화면에서 실제로 보여줘야 하는 데이터(목록/상세/수정 화면)를 먼저 적어볼까요?
+- 사용자가 입력하는 값과 서버가 계산해주는 값은 어떻게 구분할까요?
+- 동일한 의미를 가진 필드가 여러 화면에 나오면 이름을 통일할지, 뷰 전용 이름을 둘지 어떤 기준으로 결정할까요?
+
+**3) 제약(Constraints) 정의 힌트**
+
+- 필수값/선택값은 무엇이며, 누락되면 어떤 에러가 적절할까요?
+- 길이 제한, 날짜 형식, 숫자 범위 같은 검증 규칙은 UI 입력과 서버 검증을 어떻게 맞출까요?
+- 권한/소유권 제약(본인 포장만 수정/삭제)은 어떤 요청에서 반드시 체크돼야 할까요?
+---
+## 3. 🧠 매핑 로직 (Implementation Strategy)
+
+> **Goal:** 위에서 정의한 [1. 계약]과 [2. 설계] 사이의 간극을 메우는 **Service 로직**을 구상합니다.
+
+* **Mapping Method:** (예: `Stream API`를 사용하여 수동 변환 / Builder 패턴 사용)
+* **Transaction Scope:** (예: 조회만 하므로 `@Transactional(readOnly = true)` 적용)
+* **Query Strategy:**
+	* [ ] JPA 기본 메서드 (`findById`) 사용
+	* [ ] 복잡한 조회 시 QueryDSL 도입 검토 (Trigger 상황인지 체크)
 ---
 
-## 2. 🧠 매핑 전략 (Mapping Strategy)
-> **Core Logic:** 고정된 계약(DTO)과 이상적인 DB(3NF) 사이의 간극을 어떻게 메울 것인가?
-
-- **DB 설계 방향:** (예: 데이터 무결성을 위해 `Bundle`과 `Item` 완전 분리)
-- **Mapping Strategy:**
-    - **Read:** (예: QueryDSL Projections 사용하여 DTO로 즉시 변환)
-    - **Write:** (예: Service 레이어에서 `BundleDTO`를 분해하여 2개의 Entity로 저장)
-- **Critical Point:** (예: N+1 문제 방지를 위한 `BatchSize` 적용)
-
----
-
-## 3. 🎯 Task 일정 (Priority)
+## 4. 🎯 Task 일정 (Priority)
 
 | 작업                                                                                                          | 예상  |
 | ----------------------------------------------------------------------------------------------------------- | --- |
+| [Task_개발환경구축](Tasks/Task_개발환경구축.md)                                                                         | 1일  |
 | [Task_포장+물품 데이터 모델 최소 필드 확정 + DB 스키마 초안](Tasks/Task_포장+물품%20데이터%20모델%20최소%20필드%20확정%20+%20DB%20스키마%20초안.md) | 2일  |
 | Task_포장 등록/조회 흐름 설계 (요청/응답 형태 포함)                                                                           | 2일  |
 | Task_물품 등록/조회 흐름 설계 (포장 내부 연계 포함)                                                                           | 2일  |
