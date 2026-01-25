@@ -40,7 +40,7 @@ tags:
 - 냉장고칸은 번들이 없거나, 번들 여러개를 보관하다.
 - 번들은 단 1개의 냉장고칸에 보관된다.
 [포함하다]
-- 번들은 아이템이 최소 1개는 있어야 하고, 여러개도 포함한다.
+- 번들은 생성완료시 아이템이 최소 1개는 있어야 하고, 여러개도 포함한다.
 - 아이템은 단 1개의 번들에 포함된다.
 [소유하다]
 - 사용자는 0개 혹은 여러개의 번들을 소유한다.
@@ -49,11 +49,18 @@ tags:
 - 냉장고칸은 0명 혹은 여러명의 유저들에게 배정된다.
 - 사용자는 0개 혹은 여러개의 냉장고칸에 배정받는다
 
+
 ```mermaid
 erDiagram
-	USERS ||--o{ FRIDGE_BUNDLE : "소유한다" 
-	USERS }o--o{ FRIDGE_SLOT : "배정된다"
+    %% 1단계: 최상위 주체 및 공간
+    USERS ||--o{ FRIDGE_SLOT_ASSIGNMENT : "배정됨"
+    FRIDGE_SLOT ||--o{ FRIDGE_SLOT_ASSIGNMENT : "할당됨"
+
+    %% 2단계: 사용자-슬롯 기반의 논리적 묶음(Bundle)
+    USERS ||--o{ FRIDGE_BUNDLE : "소유한다"
     FRIDGE_SLOT ||--o{ FRIDGE_BUNDLE : "보관한다"
+
+    %% 3단계: 최종 실물 데이터
     FRIDGE_BUNDLE ||--|{ FRIDGE_ITEM : "포함한다"
 ```
 ### 1-3. 기초 공사 (Skeleton Code)
@@ -76,11 +83,11 @@ erDiagram
 - **Task 4 — (난이도 중~상)**
 	- 이유: 번들 의존 + 아이템 생명주기, 만료/수량 정책 포함 가능성
 
-| **상태** | **작업명 (Link)**                                                           | **주요 내용**                                                                                                     |                                                                |
-| ------ | ------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------- |
-| 완료     | [Task_개발환경구축](../../10_Workspace/Tasks/Task_개발환경구축.md)                   | 개발환경을 구축한다.                                                                                                   |                                                                |
-| `진행`   | [Task_Slot 조회 및 검증](../../10_Workspace/Tasks/Task_Slot%20조회%20및%20검증.md) | - GET /fridge/slots                                                                                           |                                                                |
-|        | Bundle 생성/조회                                                             | - GET /fridge/bundles<br>POST /fridge/bundles                                                               | - `Bundle` 생성 시 `Slot`의 현재 점유량을 `count`하는 로직 구현.               |
+| **상태** | **작업명 (Link)**                                                           | **주요 내용**                                                                                                 |                                                                |
+| ------ | ------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------- |
+| 완료     | [Task_개발환경구축](../../10_Workspace/Tasks/Task_개발환경구축.md)                   | 개발환경을 구축한다.                                                                                               |                                                                |
+| `진행`   | [Task_Slot 조회 및 검증](../../10_Workspace/Tasks/Task_Slot%20조회%20및%20검증.md) | - GET /fridge/slots                                                                                       |                                                                |
+|        | Bundle 생성/조회                                                             | - GET /fridge/bundles<br>POST /fridge/bundles                                                             | - `Bundle` 생성 시 `Slot`의 현재 점유량을 `count`하는 로직 구현.               |
 |        | 번들 상세/수정/삭제                                                              | - GET /fridge/bundles/{bundleId}<br>PATCH /fridge/bundles/{bundleId}<br>DELETE /fridge/bundles/{bundleId} |                                                                |
 |        | 아이템 추가/수정/삭제                                                             | - POST /fridge/bundles/{bundleId}/items<br>PATCH /fridge/items/{itemId}<br>DELETE /fridge/items/{itemId}  | 실제 삭제 대신 `removedAt` 업데이트 <br>포장 삭제 시 내부 물품(`Item`)들도 함께 처리되는지 |
 
@@ -105,6 +112,6 @@ erDiagram
 ---
 
 ## 📝 4. 주요 이슈 메모 (Phase Log)
-
+- [포장 생성 시 아이템 최소 1개 정책이 실무적일까](Troubleshooting/포장%20생성%20시%20아이템%20최소%201개%20정책이%20실무적일까.md)
 - (예: 개발 중 Slot의 타입을 Enum으로 변경하기로 결정함)
 - (예: Bundle 삭제 시 Item도 같이 삭제되는 Cascade 설정 적용)

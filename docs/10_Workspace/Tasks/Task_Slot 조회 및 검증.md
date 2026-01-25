@@ -7,22 +7,37 @@ tags:
 ---
 > Target API 상세:
 
-- **Request JSON:**
-
+- **Endpoint:** `GET /fridge/slots`
+- **Query Params:**
+  - `floor` (int, optional)
+  - `view` (string, optional, default=`full`, unknown → `full`)
+  - `page` (int, optional, default=0)
+  - `size` (int, optional, default=20, range 1~200)
+- **Response JSON (FridgeSlotListResponse):**
+	- items 배열 + 페이지 정보를 반환하면 되겠다.
 ```JSON
 {
-  "slotId": "uuid", //docs/20_Deliverables/03_API_Specification.md에서 복사해 붙여넣기
-  "bundleName": "string"
-}
-```
-
-- **Response JSON:**
-
-```JSON
-{
-  "bundleId": "uuid",
-  "dDay": "string(D-3)", // <--- (화면필드) 유통기한 기준 가공
-  "items": []            // <--- (화면필드) 연관 엔티티 포함
+  "items": [
+    {
+      "slotId": "uuid",
+      "slotIndex": 0,
+      "slotLetter": "A",
+      "floorNo": 2,
+      "floorCode": "2F",
+      "compartmentType": "FRIDGE",
+      "resourceStatus": "ACTIVE",
+      "slotStatus": "ACTIVE",
+      "locked": false,
+      "lockedUntil": "2024-01-01T12:00:00Z",
+      "capacity": 3,
+      "displayName": "2F-A-01",
+      "occupiedCount": 1
+    }
+  ],
+  "totalCount": 1,
+  "page": 0,
+  "size": 20,
+  "totalPages": 1
 }
 ```
 
@@ -31,6 +46,17 @@ tags:
 ## 1. 🥩 [Step 3] 실무 구현: 살 붙이기 (Implementation)
 
 **목표:** Phase 1에서 만든 뼈대(Skeleton)와 계약(DTO)을 바탕으로 실제 작동하는 코드를 작성합니다.
+
+### 1-0. 설계 흐름 요약 (요청 → 설계 확정)
+
+> **Flow:** OpenAPI → 프론트 사용 패턴 → 정책/권한 → 확장성 → 정합성
+
+1. **계약 확인 (OpenAPI):** `GET /fridge/slots`의 쿼리와 응답 스키마를 확정한다.
+2. **프론트 호출 분석:** `view=full`, `page=0`, `size=200`이 기본 패턴임을 확인한다.
+3. **정책/권한 반영:** 거주자/층별장/관리자 스코프 규칙을 적용한다.
+4. **확장성 고려:** 현재 2~5층이지만 `floor`는 정수만 검증하고 존재하지 않으면 0건 반환.
+5. **호환성 결정:** `view`는 알 수 없는 값도 `full`로 fallback 처리한다.
+6. **정합성 규칙 정의:** `locked`, `slotStatus`, `occupiedCount` 등의 일관성 규칙을 체크리스트로 고정한다.
 
 ### 1-1. 스키마 상세화 (Schema Refinement)
 
@@ -46,19 +72,55 @@ tags:
 
 > **Mapping:** DTO의 데이터를 Entity로 바꿀 때, 혹은 그 반대일 때의 규칙을 정합니다.
 
-- **Request 핸들링:**
-	- `BundleCreateRequest` → `Bundle`
-    - 입력받은 `slotId`로 `SlotRepository`를 조회하여 영속성 객체를 찾는다.
-    - `Bundle.create(slot, request.name)` 정적 팩토리 메서드를 사용해 생성한다.
-- **Response 핸들링:**
-	- `Bundle` → `BundleResponse`
-    - `dDay`는 DB에 없으므로 `ChronoUnit.DAYS.between()`을 사용하여 계산 후 DTO에 담는다.
+- **Request 핸들링 (Query):**
+  - `floor`, `view`, `page`, `size`를 정규화한다.
+  - `view`는 `full` 이외 값도 `full`로 처리한다.
+  - `page/size`는 범위 클램프(0 이상, size 1~200) 적용.
+- **Response 핸들링 (Entity → DTO):**
+  - `Slot` → `FridgeSlotResponse`
+  - `locked`는 `slotStatus`/`lockedUntil`과 정합성 유지
+  - `displayName`은 서버에서 확정하여 반환
 
 > **Business Logic:** "데이터를 저장하기 전/후에 무엇을 체크해야 하는가?"
 
-1. **사전 검증:** `Slot`이 존재하지 않으면 `ResourceNotFoundException`.
-2. **핵심 로직:** `Slot.currentItems` >= `Slot.capacity` 이면 `CustomException(FULL_SLOT)` 발생.
-3. **후처리:** 저장 후 `CreateEvent` 발행 (선택사항).
+1. **사전 검증:** `floor/page/size`의 형식과 범위를 정규화한다.
+2. **핵심 로직:** 역할/스코프에 맞는 슬롯만 조회한다.
+3. **후처리:** 응답 정합성(`locked`, `slotStatus`, `occupiedCount`)을 보장한다.
+
+### 중복 필드 해석 (UI 편의 필드)
+
+> **Note:** 계약상 중복처럼 보이는 필드는 UI 편의용 캐시 필드입니다. 삭제/통합하지 않습니다.
+
+- `floorNo` vs `floorCode`
+  - `floorNo`: 정렬/필터/비즈니스 로직용 숫자
+  - `floorCode`: UI 표시 문자열(예: `"2F"`)
+- `slotIndex` vs `slotLetter`
+  - `slotIndex`: 내부 정렬/식별용 인덱스
+  - `slotLetter`: 사용자 표기용 라벨(예: `"A"`)
+- `displayName`
+  - UI에서 조합하지 않도록 서버가 확정 제공하는 표기용 문자열
+
+### 1-2. 슬롯 조회 DTO/매핑 규칙 (요약)
+
+- **요청 DTO (Query 모델):**
+  - `floor`: Integer, optional
+  - `view`: String, optional (default `full`)
+  - `page`: Integer, optional (default 0)
+  - `size`: Integer, optional (default 20, clamp 1~200)
+- **응답 DTO (FridgeSlotResponse):**
+  - `slotId`: UUID
+  - `slotIndex`: Integer
+  - `slotLetter`: String
+  - `floorNo`: Integer
+  - `floorCode`: String
+  - `compartmentType`: String
+  - `resourceStatus`: String
+  - `slotStatus`: String (`ACTIVE|LOCKED|IN_INSPECTION`)
+  - `locked`: Boolean
+  - `lockedUntil`: DateTime (nullable 가능)
+  - `capacity`: Integer
+  - `displayName`: String
+  - `occupiedCount`: Integer
 
 ### 1-3. 기계적 구현 (Action Checklist)
 
@@ -79,9 +141,12 @@ tags:
 
 ### 2-1. 결과 검증 (Verification)
 
-- [ ] **Postman:** Request JSON을 보냈을 때, 정의한 Response Spec과 100% 일치하는가?
-- [ ] **DB Check:** 데이터 저장 시 `parent_id`(FK)가 올바르게 들어갔는가?
-- [ ] **Edge Case:** (예: 허용량이 꽉 찼을 때 에러 메시지가 정상적으로 나오는가?)
+- [ ] **기본 호출:** `GET /fridge/slots` (view 없이) → `view=full` 처리되는가?
+- [ ] **View Fallback:** `view=weird` → `full`로 fallback 되는가?
+- [ ] **층 필터:** `floor=999` → 200 + 빈 리스트로 반환되는가?
+- [ ] **페이지/사이즈:** `page=-1&size=999` → page=0, size=200으로 클램프되는가?
+- [ ] **권한 범위:** 거주자/층별장/관리자 스코프가 정확히 반영되는가?
+- [ ] **응답 정합성:** `locked=true`면 `lockedUntil` 존재, `IN_INSPECTION`이면 `locked=true`인가?
     
 
 ### 2-2. 산출물 박제 (Deliverables Update)
