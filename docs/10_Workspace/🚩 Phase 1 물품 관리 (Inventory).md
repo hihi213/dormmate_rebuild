@@ -52,16 +52,11 @@ tags:
 
 ```mermaid
 erDiagram
-    %% 1단계: 최상위 주체 및 공간
-    USERS ||--o{ FRIDGE_SLOT_ASSIGNMENT : "배정됨"
-    FRIDGE_SLOT ||--o{ FRIDGE_SLOT_ASSIGNMENT : "할당됨"
-
-    %% 2단계: 사용자-슬롯 기반의 논리적 묶음(Bundle)
-    USERS ||--o{ FRIDGE_BUNDLE : "소유한다"
-    FRIDGE_SLOT ||--o{ FRIDGE_BUNDLE : "보관한다"
-
-    %% 3단계: 최종 실물 데이터
-    FRIDGE_BUNDLE ||--|{ FRIDGE_ITEM : "포함한다"
+    USERS ||--o{ FRIDGE_SLOT_ASSIGNMENT : "배정"
+    FRIDGE_SLOT_ASSIGNMENT }o--|| FRIDGE_SLOT : "할당"
+    USERS ||--o{ FRIDGE_BUNDLE : "소유"
+    FRIDGE_SLOT ||--o{ FRIDGE_BUNDLE : "보관"
+    FRIDGE_BUNDLE ||--|{ FRIDGE_ITEM : "포함"
 ```
 ### 1-3. 기초 공사 (Skeleton Code)
 

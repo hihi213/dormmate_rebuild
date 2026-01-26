@@ -27,6 +27,27 @@
                 }
               }
             }
+          },
+          "400": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "401": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "403": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "409": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "422": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "500": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
           }
         }
       },
@@ -48,6 +69,27 @@
         "responses": {
           "200": {
             "description": "OK"
+          },
+          "400": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "401": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "403": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "409": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "422": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "500": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
           }
         }
       }
@@ -99,6 +141,27 @@
                 }
               }
             }
+          },
+          "400": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "401": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "403": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "409": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "422": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "500": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
           }
         }
       },
@@ -127,6 +190,27 @@
                 }
               }
             }
+          },
+          "400": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "401": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "403": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "409": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "422": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "500": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
           }
         }
       }
@@ -167,6 +251,27 @@
                 }
               }
             }
+          },
+          "400": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "401": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "403": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "409": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "422": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "500": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
           }
         }
       }
@@ -208,6 +313,27 @@
                 }
               }
             }
+          },
+          "400": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "401": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "403": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "409": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "422": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "500": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
           }
         }
       }
@@ -271,6 +397,27 @@
                 }
               }
             }
+          },
+          "400": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "401": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "403": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "409": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "422": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "500": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
           }
         }
       },
@@ -299,6 +446,27 @@
                 }
               }
             }
+          },
+          "400": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "401": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "403": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "409": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "422": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "500": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
           }
         }
       }
@@ -374,6 +542,27 @@
                 }
               }
             }
+          },
+          "400": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "401": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "403": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "409": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "422": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "500": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
           }
         }
       },
@@ -405,6 +594,21 @@
               }
             }
           },
+          "400": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "401": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "403": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "409": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
           "422": {
             "description": "허용량 초과 – detail 값이 `CAPACITY_EXCEEDED`",
             "content": {
@@ -414,6 +618,9 @@
                 }
               }
             }
+          },
+          "500": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
           }
         }
       }
@@ -455,6 +662,27 @@
                 }
               }
             }
+          },
+          "400": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "401": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "403": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "409": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "422": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "500": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
           }
         }
       }
@@ -485,6 +713,27 @@
                 }
               }
             }
+          },
+          "400": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "401": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "403": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "409": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "422": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "500": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
           }
         }
       }
@@ -508,6 +757,27 @@
         "responses": {
           "200": {
             "description": "OK"
+          },
+          "400": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "401": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "403": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "409": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "422": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "500": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
           }
         }
       }
@@ -538,6 +808,27 @@
                 }
               }
             }
+          },
+          "400": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "401": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "403": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "409": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "422": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "500": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
           }
         }
       }
@@ -572,6 +863,27 @@
         "responses": {
           "200": {
             "description": "OK"
+          },
+          "400": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "401": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "403": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "409": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "422": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "500": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
           }
         }
       },
@@ -604,6 +916,27 @@
         "responses": {
           "200": {
             "description": "OK"
+          },
+          "400": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "401": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "403": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "409": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "422": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "500": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
           }
         }
       }
@@ -627,6 +960,12 @@
               }
             }
           },
+          "400": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "401": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
           "403": {
             "description": "관리자 권한 필요",
             "content": {
@@ -636,6 +975,18 @@
                 }
               }
             }
+          },
+          "404": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "409": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "422": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "500": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
           }
         }
       }
@@ -666,6 +1017,27 @@
                 }
               }
             }
+          },
+          "400": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "401": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "403": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "409": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "422": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "500": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
           }
         }
       }
@@ -696,6 +1068,27 @@
                 }
               }
             }
+          },
+          "400": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "401": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "403": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "409": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "422": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "500": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
           }
         }
       }
@@ -720,6 +1113,27 @@
         "responses": {
           "200": {
             "description": "OK"
+          },
+          "400": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "401": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "403": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "409": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "422": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "500": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
           }
         }
       }
@@ -733,6 +1147,27 @@
         "responses": {
           "200": {
             "description": "OK"
+          },
+          "400": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "401": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "403": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "409": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "422": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "500": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
           }
         }
       }
@@ -773,6 +1208,27 @@
                 }
               }
             }
+          },
+          "400": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "401": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "403": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "409": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "422": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "500": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
           }
         }
       }
@@ -797,6 +1253,27 @@
         "responses": {
           "200": {
             "description": "OK"
+          },
+          "400": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "401": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "403": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "409": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "422": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "500": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
           }
         }
       },
@@ -836,6 +1313,27 @@
                 }
               }
             }
+          },
+          "400": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "401": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "403": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "409": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "422": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "500": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
           }
         }
       }
@@ -867,6 +1365,27 @@
                 }
               }
             }
+          },
+          "400": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "401": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "403": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "409": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "422": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "500": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
           }
         }
       },
@@ -889,6 +1408,27 @@
         "responses": {
           "200": {
             "description": "OK"
+          },
+          "400": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "401": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "403": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "409": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "422": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "500": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
           }
         }
       },
@@ -928,6 +1468,27 @@
                 }
               }
             }
+          },
+          "400": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "401": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "403": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "409": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "422": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "500": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
           }
         }
       }
@@ -952,6 +1513,27 @@
         "responses": {
           "200": {
             "description": "OK"
+          },
+          "400": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "401": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "403": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "409": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "422": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "500": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
           }
         }
       },
@@ -991,6 +1573,27 @@
                 }
               }
             }
+          },
+          "400": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "401": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "403": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "409": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "422": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "500": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
           }
         }
       }
@@ -1022,6 +1625,27 @@
                 }
               }
             }
+          },
+          "400": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "401": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "403": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "409": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "422": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "500": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
           }
         }
       },
@@ -1044,6 +1668,27 @@
         "responses": {
           "200": {
             "description": "OK"
+          },
+          "400": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "401": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "403": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "409": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "422": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "500": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
           }
         }
       },
@@ -1083,6 +1728,27 @@
                 }
               }
             }
+          },
+          "400": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "401": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "403": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "409": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "422": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "500": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
           }
         }
       }
@@ -1117,6 +1783,27 @@
         "responses": {
           "200": {
             "description": "OK"
+          },
+          "400": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "401": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "403": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "409": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "422": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "500": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
           }
         }
       }
@@ -1151,16 +1838,6 @@
           "required": true
         },
         "responses": {
-          "409": {
-            "description": "검사 세션 진행 중",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/FridgeSlotResponse"
-                }
-              }
-            }
-          },
           "200": {
             "description": "수정 성공",
             "content": {
@@ -1170,6 +1847,12 @@
                 }
               }
             }
+          },
+          "400": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "401": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
           },
           "403": {
             "description": "관리자 권한 필요",
@@ -1191,6 +1874,16 @@
               }
             }
           },
+          "409": {
+            "description": "검사 세션 진행 중",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/FridgeSlotResponse"
+                }
+              }
+            }
+          },
           "422": {
             "description": "현재 활성 포장 수보다 낮은 용량으로 설정 시",
             "content": {
@@ -1200,6 +1893,9 @@
                 }
               }
             }
+          },
+          "500": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
           }
         }
       }
@@ -1220,6 +1916,27 @@
                 }
               }
             }
+          },
+          "400": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "401": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "403": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "409": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "422": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "500": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
           }
         }
       }
@@ -1240,6 +1957,27 @@
                 }
               }
             }
+          },
+          "400": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "401": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "403": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "409": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "422": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "500": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
           }
         }
       }
@@ -1291,6 +2029,27 @@
                 }
               }
             }
+          },
+          "400": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "401": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "403": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "409": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "422": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "500": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
           }
         }
       }
@@ -1311,6 +2070,27 @@
                 }
               }
             }
+          },
+          "400": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "401": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "403": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "409": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "422": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "500": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
           }
         }
       }
@@ -1331,6 +2111,27 @@
                 }
               }
             }
+          },
+          "400": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "401": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "403": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "409": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "422": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "500": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
           }
         }
       }
@@ -1351,6 +2152,27 @@
                 }
               }
             }
+          },
+          "400": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "401": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "403": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "409": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "422": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "500": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
           }
         }
       }
@@ -1408,6 +2230,27 @@
                 }
               }
             }
+          },
+          "400": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "401": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "403": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "409": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "422": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "500": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
           }
         }
       }
@@ -1439,6 +2282,27 @@
                 }
               }
             }
+          },
+          "400": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "401": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "403": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "409": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "422": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "500": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
           }
         }
       }
@@ -1459,6 +2323,27 @@
                 }
               }
             }
+          },
+          "400": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "401": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "403": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "409": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "422": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "500": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
           }
         }
       }
@@ -1535,6 +2420,27 @@
                 }
               }
             }
+          },
+          "400": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "401": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "403": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "409": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "422": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "500": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
           }
         }
       }
@@ -1586,6 +2492,27 @@
                 }
               }
             }
+          },
+          "400": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "401": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "403": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "409": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "422": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "500": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
           }
         }
       }
@@ -1618,6 +2545,25 @@
           }
         ],
         "responses": {
+          "200": {
+            "description": "조회 성공",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/FridgeSlotResponse"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "401": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
           "403": {
             "description": "관리자 권한 필요",
             "content": {
@@ -1631,18 +2577,17 @@
               }
             }
           },
-          "200": {
-            "description": "조회 성공",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/FridgeSlotResponse"
-                  }
-                }
-              }
-            }
+          "404": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "409": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "422": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "500": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
           }
         }
       }
@@ -1703,6 +2648,27 @@
                 }
               }
             }
+          },
+          "400": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "401": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "403": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "409": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "422": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "500": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
           }
         }
       }
@@ -1723,6 +2689,27 @@
                 }
               }
             }
+          },
+          "400": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "401": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "403": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "409": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "422": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "500": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
           }
         }
       }
@@ -1763,6 +2750,27 @@
                 }
               }
             }
+          },
+          "400": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "401": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "403": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "409": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "422": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "500": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
           }
         }
       }
@@ -1770,6 +2778,45 @@
   },
   "components": {
     "schemas": {
+      "ProblemDetail": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "format": "uri"
+          },
+          "title": {
+            "type": "string"
+          },
+          "status": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "detail": {
+            "type": "string"
+          },
+          "instance": {
+            "type": "string",
+            "format": "uri"
+          },
+          "code": {
+            "type": "string"
+          },
+          "errors": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "properties": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        }
+      },
       "NotificationPolicy": {
         "required": [
           "batchTime"
@@ -3474,6 +4521,18 @@
           },
           "detail": {
             "type": "string"
+          }
+        }
+      }
+    },
+    "responses": {
+      "ProblemDetailResponse": {
+        "description": "Error response in ProblemDetail format",
+        "content": {
+          "application/problem+json": {
+            "schema": {
+              "$ref": "#/components/schemas/ProblemDetail"
+            }
           }
         }
       }

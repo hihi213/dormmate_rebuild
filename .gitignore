@@ -65,8 +65,6 @@ backend/.gradle/
 backend/out/
 backend/.idea/
 
-#codex
-AGENTS.md
 #obsidian
 docs/개발플로우.md
 docs/.obsidian

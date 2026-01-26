@@ -20,7 +20,7 @@ tags:
 
 ---
 
-## 2. 실무 흐름 (Contract → Code)
+## 2. 설계 흐름
 
 ### 2-1. 계약 확인
 - 쿼리/응답 스키마를 그대로 사용한다.
@@ -39,7 +39,7 @@ tags:
 
 ### 2-4. 응답 조립
 - `Slot` 엔티티를 `FridgeSlotResponse`로 매핑
-- `displayName`은 서버에서 확정
+- `displayName`은 서버에서 계산 생성 (DB 컬럼 없음)
 - `occupiedCount`는 활성 번들 기준 집계
 - `locked`/`lockedUntil`/`slotStatus` 정합성 보장
 
@@ -89,7 +89,7 @@ tags:
 - [ ] 관리자: 전체 조회
 
 ### 5-3. 응답 정합성
-- [ ] `locked=true` → `lockedUntil` 존재
+- [ ] locked=true면 lockedUntil이 있어야 함
 - [ ] `slotStatus=IN_INSPECTION` → `locked=true`
 - [ ] `occupiedCount <= capacity`
 
@@ -105,6 +105,23 @@ tags:
 
 ## 7. DB 상세 설계 (Phase 1 기준 초안)
 
+### 7-0. ERD (확장 반영)
+> **Note:** 초기 5개 테이블(USERS/FRIDGE_SLOT/FRIDGE_BUNDLE/FRIDGE_ITEM/FRIDGE_SLOT_ASSIGNMENT)만으로 시작하려 했으나,  
+> API 스펙의 `roles`, `primaryRoom`, `room/roomCode/personalNo` 요구사항을 충족하기 위해  
+> `USER_ROLE`, `ROOM_ASSIGNMENT`, `ROOM`을 추가 설계하였다.
+
+```mermaid
+erDiagram
+    USERS ||--o{ FRIDGE_SLOT_ASSIGNMENT : "배정"
+    FRIDGE_SLOT_ASSIGNMENT }o--|| FRIDGE_SLOT : "할당"
+    USERS ||--o{ FRIDGE_BUNDLE : "소유"
+    FRIDGE_SLOT ||--o{ FRIDGE_BUNDLE : "보관"
+    FRIDGE_BUNDLE ||--|{ FRIDGE_ITEM : "포함"
+    USERS ||--o{ USER_ROLE : "역할"
+    USERS ||--o{ ROOM_ASSIGNMENT : "배정"
+    ROOM ||--o{ ROOM_ASSIGNMENT : "방"
+```
+
 ### 7-1. 핵심 테이블
 
 **FRIDGE_SLOT**
@@ -112,14 +129,14 @@ tags:
 - `slot_index` (INT)
 - `slot_letter` (VARCHAR)
 - `floor_no` (INT)
-- `floor_code` (VARCHAR)
 - `compartment_type` (VARCHAR)
 - `resource_status` (VARCHAR)
 - `slot_status` (VARCHAR: ACTIVE/LOCKED/IN_INSPECTION)
 - `locked_until` (DATETIME, nullable)
 - `capacity` (INT)
-- `display_name` (VARCHAR)
 - `created_at`, `updated_at`
+- 인덱스: `(floor_no)`, `(compartment_type)`, `(slot_status)`
+- 제약: `capacity > 0`
 
 **FRIDGE_BUNDLE**
 - `id` (PK, UUID)
@@ -127,6 +144,7 @@ tags:
 - `owner_id` (FK → USERS.id)
 - `status` (VARCHAR)
 - `created_at`, `updated_at`, `deleted_at`
+- 인덱스: `(slot_id, status)`, `(owner_id, status)`
 
 **FRIDGE_ITEM**
 - `id` (PK, UUID)
@@ -136,9 +154,42 @@ tags:
 - `quantity` (INT, nullable)
 - `unit_code` (VARCHAR, nullable)
 - `created_at`, `updated_at`, `removed_at`
+- 인덱스: `(bundle_id)`, `(expiry_date)`
 
 **USERS**
 - `id` (PK, UUID)
+- `login_id` (VARCHAR)
+- `display_name` (VARCHAR)
+- `status` (VARCHAR)
+- `last_login_at` (DATETIME, nullable)
+- `created_at`, `updated_at`
+- 인덱스: `(login_id)`, `(status)`
+- 제약: `login_id` 유니크, `status` NOT NULL
+
+**USER_ROLE**
+- `id` (PK, UUID)
+- `user_id` (FK → USERS.id)
+- `role` (VARCHAR: RESIDENT/FLOOR_MANAGER/ADMIN)
+- 인덱스: `(user_id)`, `(role)`
+- 제약: `(user_id, role)` 유니크
+
+**ROOM_ASSIGNMENT**
+- `id` (PK, UUID)
+- `user_id` (FK → USERS.id)
+- `room_id` (UUID, nullable)
+- `floor` (INT)
+- `room_number` (VARCHAR)
+- `personal_no` (INT)
+- `assigned_at` (DATETIME)
+- 인덱스: `(user_id)`, `(floor)`, `(room_number)`
+- 제약: `(user_id, room_id)` 유니크 (활성 배정용이면 released_at 추가 고려)
+
+**ROOM**
+- `id` (PK, UUID)
+- `floor` (INT)
+- `room_number` (VARCHAR)
+- 인덱스: `(floor)`, `(room_number)`
+- 제약: `(floor, room_number)` 유니크
 
 **FRIDGE_SLOT_ASSIGNMENT**
 - `id` (PK, UUID)
@@ -148,6 +199,7 @@ tags:
 - `released_at` (DATETIME, nullable)
 - `status` (VARCHAR, optional)
 - 유니크 제약: 활성 배정 1건 보장 (예: `(user_id, slot_id, released_at)` 기준)
+- 인덱스: `(user_id, released_at)`, `(slot_id, released_at)`
 
 ### 7-2. 관계 요약
 - USERS 1:N FRIDGE_BUNDLE
@@ -165,3 +217,11 @@ tags:
 ## 8. 문서 반영
 - [ ] API 변경 시 `docs/20_Deliverables/03_API_Specification.md` 업데이트
 - [ ] 스키마 변경 시 `docs/20_Deliverables/02_ERD_&_Schema.md` 업데이트
+
+
+### Troubleshooting Log
+> 기술적 이슈는 `Troubleshooting/` 폴더에 별도 파일로 생성 후 여기에 링크를 거세요.
+
+
+- [[../Troubleshooting/폴더구조는 어떻게 할까]]
+- [사용자 필드 설계(최소 vs 필수)](../Troubleshooting/사용자%20필드%20설계(최소%20vs%20필수).md)
