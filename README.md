@@ -6,7 +6,7 @@
 <div align="center">
 
 ![Java](https://img.shields.io/badge/Java-17-007396?style=flat-square&logo=java&logoColor=white)
-![Spring Boot](https://img.shields.io/badge/Spring%20Boot-4.x-6DB33F?style=flat-square&logo=springboot&logoColor=white)
+![Spring Boot](https://img.shields.io/badge/Spring%20Boot-4.0.1-6DB33F?style=flat-square&logo=springboot&logoColor=white)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-4169E1?style=flat-square&logo=postgresql&logoColor=white)
 ![Obsidian](https://img.shields.io/badge/Docs-Obsidian-483699?style=flat-square&logo=obsidian&logoColor=white)
 
@@ -53,8 +53,8 @@ DormMate/                      (Git Root)
 ```
 
 ### 3-2. 기술 스택 (Backend)
-Backend: Java 17, Spring Boot 4.x, Spring Data JPA, Bean Validation
-Auth: Spring Security(세션 기반) + BCrypt
+Backend: Java 17, Spring Boot 4.0.1, Spring Data JPA, Bean Validation
+Auth: (예정) Spring Security(세션 기반) + BCrypt
 DB: PostgreSQL (로컬은 docker-compose)
 Frontend: Next.js(레거시 유지) + 기존 호출 방식 유지(필요한 곳만 최소 수정)
 문서/계약: 현재 03_API_Specification.md 고정

@@ -16,7 +16,7 @@ graph TD
 |**구분**|**컴포넌트**|**역할 및 기술 스택**|
 |---|---|---|
 |**Client**|**Frontend**|사용자의 입력을 받고 화면을 렌더링합니다. (Next.js - Legacy)|
-|**Server**|**Backend API**|비즈니스 로직을 수행하고 데이터를 가공합니다. (Spring Boot 3.2)|
+|**Server**|**Backend API**|비즈니스 로직을 수행하고 데이터를 가공합니다. (Spring Boot 4.0.1)|
 |**Data**|**PostgreSQL**|영구적인 데이터(물품, 사용자 정보)를 저장합니다.|
 |**Cache**|**Redis**|(Phase 2) 로그인 세션 및 분산 락(Distributed Lock) 처리를 담당합니다.|
 

@@ -76,7 +76,7 @@ DB 테이블과 매핑될 자바 객체(Entity)를 설계하고 구현하는 단
 
 ### ✅ 수행할 작업 (Action)
 
-1. [ ] **JSON 구조 분석:** `docs/00_Blueprint/UI_Flow_Analysis.md`와 프론트엔드 코드를 분석하여 요청(Request) 및 응답(Response) 필드를 파악합니다.
+1. [ ] **JSON 구조 분석:** OpenAPI(`docs/20_Deliverables/03_API_Specification.md`)를 기준으로 요청/응답 필드를 확정하고, UI Flow는 참고만 합니다.
 2. [ ] **DTO 클래스 작성:**
     
     - [ ] **Request DTO:** 클라이언트가 보낼 데이터 (예: `BundleCreateRequest`). Validation 어노테이션(`@NotBlank`, `@NotNull`)을 적용합니다.

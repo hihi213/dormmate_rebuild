@@ -2774,6 +2774,58 @@
           }
         }
       }
+    },
+    "/fridge/inspections/{sessionId}/notifications/resend": {
+      "post": {
+        "tags": [
+          "inspection-controller"
+        ],
+        "operationId": "resendInspectionNotification",
+        "parameters": [
+          {
+            "name": "sessionId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/InspectionSessionResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "401": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "403": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "409": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "422": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          },
+          "500": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          }
+        }
+      }
     }
   },
   "components": {
