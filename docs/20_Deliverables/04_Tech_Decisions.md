@@ -33,20 +33,44 @@
   - 도메인 코드: 대문자 스네이크 케이스로 정의하고 OpenAPI/프론트 코드 매핑에 동기화한다.
 - **근거:** 일관된 에러 계약을 통해 프론트/백엔드 간 메시지 매핑과 디버깅을 단순화한다.
 - **대안:** HTTP 상태만으로 분기하거나, 모듈마다 임의의 에러 포맷을 사용하는 방식.
-## 4. 폴더 구조 결정 (도메인 중심)
-- **선택:** 레이어 중심보다 도메인 중심 구조를 채택한다.
+## 4. 폴더 구조 결정 (도메인 중심, Flat)
+- **선택:** 도메인 중심 구조를 유지하되, 각 도메인 하위는 Flat으로 둔다.
 - **근거:**
   - 모듈 확장성: 냉장고 외 확장 모듈 추가에 유리
-  - 탐색 속도: 기능 단위로 코드가 모여 탐색/수정이 빠름
-  - 경계 명확화: 모듈 간 의존과 결합도 관리가 쉬움
-  - 개인 유지보수: 기능 단위 사고 흐름과 일치
-- **대안:** controller/service/repository 중심 레이어 구조
+  - 탐색 속도: 깊이를 줄여 파일 탐색 비용 감소
+  - 경계 명확화: 도메인별 책임이 분리되면서도 과도한 계층 분리를 피함
+  - 학습 효율: 초보 개발자가 구조를 빠르게 파악 가능
+- **대안:** 도메인 내부에 controller/service/repository/entity/dto 폴더를 중첩하는 레이어 구조
 - **범위:** 백엔드 패키지 구성 기준
 - **예시 구조:**
   - domain/
     - fridge/
       - slot/
+        - FridgeSlot.java
+        - FridgeSlotRepository.java
+        - FridgeSlotService.java
+        - FridgeSlotController.java
+        - FridgeSlotRequest.java
+        - FridgeSlotResponse.java
       - bundle/
+        - FridgeBundle.java
+        - FridgeBundleRepository.java
+        - FridgeBundleService.java
+        - FridgeBundleController.java
+        - FridgeBundleRequest.java
+        - FridgeBundleResponse.java
       - item/
+        - FridgeItem.java
+        - FridgeItemRepository.java
+        - FridgeItemService.java
+        - FridgeItemController.java
+        - FridgeItemRequest.java
+        - FridgeItemResponse.java
     - user/
+      - User.java
+      - UserRepository.java
+      - UserService.java
+      - UserController.java
+      - UserRequest.java
+      - UserResponse.java
 - **관련 로그 링크:** `docs/10_Workspace/Troubleshooting/폴더구조는 어떻게 할까.md`

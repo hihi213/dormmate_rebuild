@@ -1,4 +1,4 @@
-package com.dormmate.domain.user.entity;
+package com.dormmate.domain.user;
 
 import java.util.UUID;
 
