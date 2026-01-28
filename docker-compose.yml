@@ -1,0 +1,15 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: dormmate-postgres
+    environment:
+      POSTGRES_DB: dormmate_rebuild_db
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: "1234"
+    ports:
+      - "5432:5432"
+    volumes:
+      - dormmate_postgres_data:/var/lib/postgresql/data
+
+volumes:
+  dormmate_postgres_data:

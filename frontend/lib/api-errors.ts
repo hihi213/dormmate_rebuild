@@ -60,6 +60,10 @@ export const defaultErrorDictionary: ApiErrorDictionary = {
 }
 
 export const defaultCodeDictionary: Record<string, ApiErrorTemplate> = {
+  BAD_REQUEST: {
+    code: "BAD_REQUEST",
+    message: "요청 형식이 올바르지 않습니다. 입력값을 확인해 주세요.",
+  },
   UNAUTHORIZED: {
     code: "UNAUTHORIZED",
     message: "로그인이 필요하거나 세션이 만료되었습니다. 다시 로그인해 주세요.",
@@ -67,6 +71,14 @@ export const defaultCodeDictionary: Record<string, ApiErrorTemplate> = {
   FORBIDDEN: {
     code: "FORBIDDEN",
     message: "이 작업을 수행할 권한이 없습니다.",
+  },
+  NOT_FOUND: {
+    code: "NOT_FOUND",
+    message: "요청하신 리소스를 찾을 수 없습니다.",
+  },
+  CONFLICT: {
+    code: "CONFLICT",
+    message: "이미 처리된 요청이거나 충돌이 발생했습니다.",
   },
   CAPACITY_EXCEEDED: {
     code: "CAPACITY_EXCEEDED",
@@ -212,6 +224,22 @@ export const defaultCodeDictionary: Record<string, ApiErrorTemplate> = {
     code: "COMPARTMENTS_NOT_FOUND_ON_FLOOR",
     message: "해당 층에 배정 가능한 냉장고 칸이 없습니다.",
   },
+  VALIDATION_FAILED: {
+    code: "VALIDATION_FAILED",
+    message: "입력값이 유효하지 않습니다. 항목을 다시 확인해 주세요.",
+  },
+  UNPROCESSABLE_CONTENT: {
+    code: "UNPROCESSABLE_CONTENT",
+    message: "처리할 수 없는 요청입니다. 입력값을 다시 확인해 주세요.",
+  },
+  RATE_LIMITED: {
+    code: "RATE_LIMITED",
+    message: "요청이 너무 많습니다. 잠시 후 다시 시도해 주세요.",
+  },
+  SERVER_ERROR: {
+    code: "SERVER_ERROR",
+    message: "서버에 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.",
+  },
   NETWORK_ERROR: {
     code: "NETWORK_ERROR",
     message: "네트워크 연결에 문제가 발생했습니다. 잠시 후 다시 시도해 주세요.",
@@ -223,13 +251,41 @@ type ErrorPayload = {
   message?: string
   detail?: string
   details?: Record<string, unknown>
+  errors?: Record<string, unknown> | unknown[]
+  properties?: {
+    errors?: Record<string, unknown> | unknown[]
+  }
   errors?: Record<string, unknown>
   [key: string]: unknown
 }
 
+function summarizeErrors(payload?: ErrorPayload): string | undefined {
+  if (!payload) return undefined
+  const errors = payload.errors ?? payload.properties?.errors
+  if (!errors) return undefined
+
+  if (Array.isArray(errors)) {
+    const messages = errors.filter((item): item is string => typeof item === "string")
+    return messages.length ? messages.join(" ") : undefined
+  }
+
+  if (errors && typeof errors === "object") {
+    const messages = Object.values(errors)
+      .flatMap((entry) => {
+        if (typeof entry === "string") return [entry]
+        if (Array.isArray(entry)) return entry.filter((item): item is string => typeof item === "string")
+        return []
+      })
+      .filter((msg) => msg && msg.trim().length > 0)
+    return messages.length ? messages.join(" ") : undefined
+  }
+
+  return undefined
+}
+
 async function parseErrorBody(response: Response): Promise<ErrorPayload | undefined> {
   const contentType = response.headers.get("content-type") || ""
-  if (!contentType.includes("application/json")) {
+  if (!contentType.includes("application/json") && !contentType.includes("application/problem+json")) {
     return undefined
   }
   try {
@@ -265,6 +321,8 @@ export async function resolveApiError(
   if (payload) {
     if (typeof payload.message === "string" && payload.message.trim().length > 0) {
       messageFromPayload = payload.message
+    } else if (typeof payload.title === "string" && payload.title.trim().length > 0) {
+      messageFromPayload = payload.title
     } else if (typeof payload.detail === "string" && payload.detail.trim().length > 0) {
       messageFromPayload = payload.detail
     } else if (Array.isArray(payload.errors)) {
@@ -279,6 +337,8 @@ export async function resolveApiError(
           return []
         })
         .join(" ")
+    } else {
+      messageFromPayload = summarizeErrors(payload)
     }
   }
 
