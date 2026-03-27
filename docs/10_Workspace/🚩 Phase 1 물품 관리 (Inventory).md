@@ -18,7 +18,7 @@ tags:
 | ---------- | -------------------------------- | ------------------------------------------------------- | ------------- |
 | GET        | /fridge/slots                    | 칸 목록 조회(필터: floor, view, page, size)                    | Slot          |
 | GET        | /fridge/bundles                  | 포장 목록 조회(필터: slotId, owner, status, search, page, size) | bundle, owner |
-| POST       | /fridge/bundles                  | 포장 생성(허용량 초과 시 422 CAPACITY_EXCEEDED)                   | bundle       |
+| POST       | /fridge/bundles                  | 포장 생성(허용량 초과 시 422 CAPACITY_EXCEEDED)                   | bundle        |
 | GET        | /fridge/bundles/{bundleId}       | 포장 상세 조회                                                | bundle        |
 | PATCH      | /fridge/bundles/{bundleId}       | 포장 수정                                                   | bundle        |
 | DELETE     | /fridge/bundles/{bundleId}       | 포장 삭제                                                   | bundle        |
@@ -37,32 +37,46 @@ tags:
 > **Focus:** 필드(컬럼)는 생략하고, **URL 경로 분석**을 통해 부모-자식 관계(`||--o{`)만 선을 긋습니다.
 
 [보관하다]
-- 냉장고칸은 번들이 없거나, 번들 여러개를 보관하다.
+- 냉장고칸은 번들이 없거나, 번들 여러 개를 보관한다.
 - 번들은 단 1개의 냉장고칸에 보관된다.
+
 [포함하다]
-- 번들은 생성완료시 아이템이 최소 1개는 있어야 하고, 여러개도 포함한다.
+- 번들은 생성 완료 시 아이템이 최소 1개는 있어야 하고, 여러 개도 포함한다.
 - 아이템은 단 1개의 번들에 포함된다.
+
 [소유하다]
-- 사용자는 0개 혹은 여러개의 번들을 소유한다.
-- 번들은 1명의 사용자에게 속한다
+- 사용자는 0개 혹은 여러 개의 번들을 소유한다.
+- 번들은 1명의 사용자에게 속한다.
+
 [배정한다]
-- 냉장고칸은 0명 혹은 여러명의 유저들에게 배정된다.
-- 사용자는 0개 혹은 여러개의 냉장고칸에 배정받는다
+- 냉장고칸은 0개 혹은 여러 개의 호실에 배정될 수 있다.
+- 호실은 0개 혹은 여러 개의 냉장고칸에 배정될 수 있다.
 
 
 ```mermaid
 erDiagram
-    USERS ||--o{ FRIDGE_SLOT_ASSIGNMENT : "배정"
-    FRIDGE_SLOT_ASSIGNMENT }o--|| FRIDGE_SLOT : "할당"
     USERS ||--o{ FRIDGE_BUNDLE : "소유"
     FRIDGE_SLOT ||--o{ FRIDGE_BUNDLE : "보관"
     FRIDGE_BUNDLE ||--|{ FRIDGE_ITEM : "포함"
+
+    ROOM ||--o{ FRIDGE_SLOT_ASSIGNMENT : "배정"
+    FRIDGE_SLOT ||--o{ FRIDGE_SLOT_ASSIGNMENT : "할당"
+
+    %% Phase3(Inspection)에서 활성화 예정
+    %% USERS ||--o{ FRIDGE_SLOT_INSPECTION_PERMISSION : "검사권한"
+    %% FRIDGE_SLOT ||--o{ FRIDGE_SLOT_INSPECTION_PERMISSION : "검사권한"
+
 ```
+
+
 ### 1-3. 기초 공사 (Skeleton Code)
 
 > **Check:** 실제 코딩을 시작합니다. 단, **필드 없이 `@Id`와 `연관관계`만 작성**합니다.
 
-- [ ] `domain/entity` 패키지 클래스 생성 완료
+- [x] `domain/entity` 패키지 클래스 생성 완료 ✅ 2026-02-02
+	- `AUTO_INCREMENT` 전략은 키를 예측할수있기때문에 보안이 중요한경우는 UUID로 생성하는걸로 구현하려 했으나 api계약은 모두 UUID로 정해져있어 UUID로 구현함
+	- 만약 api 계약이 정해져있지 않았다면?
+		- `ROOM`, `FRIDGE_ITEM`은 이미 그 자체로 순서가 정해져있으므로 long으로 구현하자.
 - [ ] **Relationship:** `@ManyToOne`, `@OneToMany` 어노테이션 매핑 완료
 - [ ] **Repo:** 기본 `JpaRepository` 인터페이스 생성 완료
 

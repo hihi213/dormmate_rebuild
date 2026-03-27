@@ -5,154 +5,93 @@ created: 01-03 20:07
 tags:
   - task
 ---
-> Target API 상세:
 
-- **Endpoint:** `GET /fridge/slots`
-- **Query Params:**
-  - `floor` (int, optional)
-  - `view` (string, optional, default=`full`, unknown → `full`)
-  - `page` (int, optional, default=0)
-  - `size` (int, optional, default=20, range 1~200)
-- **Response JSON (FridgeSlotListResponse):**
-	- items 배열 + 페이지 정보를 반환하면 되겠다.
-```JSON
-{
-  "items": [
-    {
-      "slotId": "uuid",
-      "slotIndex": 0,
-      "slotLetter": "A",
-      "floorNo": 2,
-      "floorCode": "2F",
-      "compartmentType": "FRIDGE",
-      "resourceStatus": "ACTIVE",
-      "slotStatus": "ACTIVE",
-      "locked": false,
-      "lockedUntil": "2024-01-01T12:00:00Z",
-      "capacity": 3,
-      "displayName": "2F-A-01",
-      "occupiedCount": 1
-    }
-  ],
-  "totalCount": 1,
-  "page": 0,
-  "size": 20,
-  "totalPages": 1
-}
-```
+## **계약 요약 (OpenAPI)**
+- Method/Path: GET /fridge/slots
+- Query params (all optional):
+    - floor (int32)
+    - view (string)
+    - page (int32)
+    - size (int32)
+- 200 Response: FridgeSlotListResponse
+    - items: `FridgeSlotResponse[]`
+    - totalCount (int64)
+    - page (int32)
+    - size (int32)
+    - totalPages (int32)
+- FridgeSlotResponse fields:
+    - slotId (uuid)
+    - slotIndex (int32)
+    - slotLetter (string)
+    - floorNo (int32)
+    - floorCode (string)
+    - compartmentType (string)
+    - resourceStatus (string)
+    - slotStatus (enum: ACTIVE|LOCKED|IN_INSPECTION)
+    - locked (boolean)
+    - lockedUntil (date-time)
+    - capacity (int32)
+    - displayName (string)
+    - occupiedCount (int32)
+- 오류 응답: ProblemDetailResponse (400/401/403/404/409/422/500)
 
 ---
 
-## 1. 🥩 [Step 3] 실무 구현: 살 붙이기 (Implementation)
+## 1. 계약 확정
 
-**목표:** Phase 1에서 만든 뼈대(Skeleton)와 계약(DTO)을 바탕으로 실제 작동하는 코드를 작성합니다.
 
-### 1-0. 설계 흐름 요약 (요청 → 설계 확정)
+다른 층 냉장고의 개별 칸 관리도 할수있어서 층단위보단 칸단위가 적합할것같다 그러면, 관리칸과 물품 배정칸이 중복일수도 있는데
 
-> **Flow:** OpenAPI → 프론트 사용 패턴 → 정책/권한 → 확장성 → 정합성
+- 어떤 역할이 어떤 칸을 볼 수 있는지
+	- 거주자와 냉장고와 거주호실의 최소 관계정의
+		- 거주자는 호실에 거주한다.
+		- 호실은 층에 속해있다
+		- 슬롯(냉장고칸)은 냉장고에 속해있다
+		- 응답 DTO에는 냉장고가 없으므로, 내부 도메인 모델로 만들자.
+	- 거주자
+		- 물품 보관: 본인에게 배정된 슬롯에서만 가능
+		- 본인 물품만 조회,수정,삭제 가능
+		- 단 해당칸이 검사중인경우 등록.수정, 삭제 불가
+	- 층별장: 기본은 거주자와 권한동일
+		- 검사 권한을 배정받은 칸에서 검사 세션 시작후 진행/제출, 결과로 폐기 처리
+	- 관리자: 전체 조회 + 강제 수정/삭제/일괄 삭제
+- slotStatus, locked, lockedUntil 계산 규칙 및 일관성
+	- IN_INSPECTION: 활성 검사 세션 존재
+	    - locked = true, lockedUntil 사용
+	- ACTIVE: 검사 세션 없음
+	    - locked = false, lockedUntil = null
+	- LOCKED: 세션과 무관한 수동 잠금(관리/정비 등) 용도
+	- **정합성 체크**
+		- slotStatus = IN_INSPECTION ⇒ locked = true
+		- slotStatus = ACTIVE ⇒ locked = false, lockedUntil = null
+		- locked = true ⇒ slotStatus ≠ ACTIVE
+- 페이징 규칙(page/size)과 totalPages 계산 방식
+	- page: 기본 0, 음수는 0
+	- size: 기본 20, 범위 1~200 클램프
+	- totalPages = ceil(totalCount / size)
+- view 파라미터 의미(필터/정렬/전용 뷰 여부)
+	- 현재는 굳이 설정할 필요성을 못느껴서 항상 동일결과 full를 반환하게 하고 추후 확장하자.
+- occupiedCount(**점유량 표시**)의 기준
+	- **활성 포장(소프트 삭제 제외)** 기준 집계
+	- 검사/폐기 처리된 포장은 제외
 
-1. **계약 확인 (OpenAPI):** `GET /fridge/slots`의 쿼리와 응답 스키마를 확정한다.
-2. **프론트 호출 분석:** `view=full`, `page=0`, `size=200`이 기본 패턴임을 확인한다.
-3. **정책/권한 반영:** 거주자/층별장/관리자 스코프 규칙을 적용한다.
-4. **확장성 고려:** 현재 2~5층이지만 `floor`는 정수만 검증하고 존재하지 않으면 0건 반환.
-5. **호환성 결정:** `view`는 알 수 없는 값도 `full`로 fallback 처리한다.
-6. **정합성 규칙 정의:** `locked`, `slotStatus`, `occupiedCount` 등의 일관성 규칙을 체크리스트로 고정한다.
+### 요청/응답 DTO 설계안 작성
+- 요청
+	- floor: 존재하지 않는 층이면 **200 + 빈 리스트**
+	- page: 기본 0, 음수는 0
+	- size: 기본 20, 범위 1~200 클램프
+	- view: **무시하고 full 처리**
 
-### 1-1. 스키마 상세화 (Schema Refinement)
 
-> **Question:** API의 필터링(`status`), 에러 처리(`capacity`), 정렬(`createdAt`)을 위해 **Entity에 어떤 컬럼이 추가되어야 하나요?**
+## 2. 연관관계 스켈레톤
 
-|**Entity**|**필드명**|**타입**|**필수여부**|**추가 사유 (Validation/Logic)**|
-|---|---|---|---|---|
-|`Bundle`|`status`|Enum|Y|삭제된 꾸러미를 제외하고 조회하기 위해|
-|`Slot`|`capacity`|Integer|Y|물품이 꽉 찼는지(Max) 검증하기 위해|
-|`Item`|`expiryDate`|LocalDate|N|D-Day 계산을 위한 원천 데이터|
+## 3. 스키마 상세화
 
-### 1-2. 매핑 및 로직 설계 (Strategy)
+## 4. Repository, Service, Controller 구현
 
-> **Mapping:** DTO의 데이터를 Entity로 바꿀 때, 혹은 그 반대일 때의 규칙을 정합니다.
-
-- **Request 핸들링 (Query):**
-  - `floor`, `view`, `page`, `size`를 정규화한다.
-  - `view`는 `full` 이외 값도 `full`로 처리한다.
-  - `page/size`는 범위 클램프(0 이상, size 1~200) 적용.
-- **Response 핸들링 (Entity → DTO):**
-  - `Slot` → `FridgeSlotResponse`
-  - `locked`는 `slotStatus`/`lockedUntil`과 정합성 유지
-  - `displayName`은 서버에서 확정하여 반환
-
-> **Business Logic:** "데이터를 저장하기 전/후에 무엇을 체크해야 하는가?"
-
-1. **사전 검증:** `floor/page/size`의 형식과 범위를 정규화한다.
-2. **핵심 로직:** 역할/스코프에 맞는 슬롯만 조회한다.
-3. **후처리:** 응답 정합성(`locked`, `slotStatus`, `occupiedCount`)을 보장한다.
-
-### 중복 필드 해석 (UI 편의 필드)
-
-> **Note:** 계약상 중복처럼 보이는 필드는 UI 편의용 캐시 필드입니다. 삭제/통합하지 않습니다.
-
-- `floorNo` vs `floorCode`
-  - `floorNo`: 정렬/필터/비즈니스 로직용 숫자
-  - `floorCode`: UI 표시 문자열(예: `"2F"`)
-- `slotIndex` vs `slotLetter`
-  - `slotIndex`: 내부 정렬/식별용 인덱스
-  - `slotLetter`: 사용자 표기용 라벨(예: `"A"`)
-- `displayName`
-  - UI에서 조합하지 않도록 서버가 확정 제공하는 표기용 문자열
-
-### 1-2. 슬롯 조회 DTO/매핑 규칙 (요약)
-
-- **요청 DTO (Query 모델):**
-  - `floor`: Integer, optional
-  - `view`: String, optional (default `full`)
-  - `page`: Integer, optional (default 0)
-  - `size`: Integer, optional (default 20, clamp 1~200)
-- **응답 DTO (FridgeSlotResponse):**
-  - `slotId`: UUID
-  - `slotIndex`: Integer
-  - `slotLetter`: String
-  - `floorNo`: Integer
-  - `floorCode`: String
-  - `compartmentType`: String
-  - `resourceStatus`: String
-  - `slotStatus`: String (`ACTIVE|LOCKED|IN_INSPECTION`)
-  - `locked`: Boolean
-  - `lockedUntil`: DateTime (nullable 가능)
-  - `capacity`: Integer
-  - `displayName`: String
-  - `occupiedCount`: Integer
-
-### 1-3. 기계적 구현 (Action Checklist)
-
-> **Execution:** 위 설계가 끝났으므로 고민 없이 순서대로 코딩합니다.
-
-- [ ] **Entity:** 위 1-1에서 정의한 필드(`status`, `capacity`…) 추가
-- [ ] **DTO:** `Request`/`Response` 클래스 생성 (Validation 어노테이션 포함)
-- [ ] **Repository:** 필요한 쿼리(`findAllByStatus`, `findBySlotId` 등) 인터페이스 작성
-- [ ] **Service:** 1-2의 매핑 및 비즈니스 로직 구현 (`@Transactional` 적용)
-- [ ] **Controller:** URL 매핑 및 Service 호출 연결
-    
-
----
-
-## 2. ✅ [Step 4] 검증 및 마감 (Closing)
-
-**목표:** 구현 결과를 확인하고, 변경된 내용을 문서에 반영하여 '완료(Done)' 상태로 만듭니다.
-
-### 2-1. 결과 검증 (Verification)
-
-- [ ] **기본 호출:** `GET /fridge/slots` (view 없이) → `view=full` 처리되는가?
-- [ ] **View Fallback:** `view=weird` → `full`로 fallback 되는가?
-- [ ] **층 필터:** `floor=999` → 200 + 빈 리스트로 반환되는가?
-- [ ] **페이지/사이즈:** `page=-1&size=999` → page=0, size=200으로 클램프되는가?
-- [ ] **권한 범위:** 거주자/층별장/관리자 스코프가 정확히 반영되는가?
-- [ ] **응답 정합성:** `locked=true`면 `lockedUntil` 존재, `IN_INSPECTION`이면 `locked=true`인가?
-    
-
-### 2-2. 산출물 박제 (Deliverables Update)
-
-- [ ] **API Spec:** 실제 응답값이 초기 설계와 달라졌다면 `20_Deliverables/03_API_Specification.md` 수정
-- [ ] **ERD:** 필드(컬럼)가 추가되었으므로 `20_Deliverables/02_ERD.md` 업데이트
-
-### 2-3. Troubleshooting Log
-> 기술적 이슈는 `Troubleshooting/` 폴더에 별도 파일로 생성 후 여기에 링크를 거세요.
+1. 계약 확정: 요청/응답 DTO 설계안 작성 → OpenAPI와 일치 검토
+2. 관계 스케치: Slot/Bundle/Inspection 등 최소 연관관계만 스켈레톤
+3. 스키마 상세화: 상태/락/용량/점유 계산 규칙 필드 확정
+4. Repository: 조회 필터/페이지 쿼리 메서드 설계
+5. Service: 권한검증 → 조회 → 상태 계산/매핑
+6. Controller: 쿼리 파라미터 바인딩/검증 → 응답 변환
