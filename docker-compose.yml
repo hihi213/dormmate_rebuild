@@ -1,15 +1,48 @@
 services:
   postgres:
     image: postgres:16
-    container_name: dormmate-postgres
     environment:
       POSTGRES_DB: dormmate_rebuild_db
       POSTGRES_USER: user
       POSTGRES_PASSWORD: "1234"
     ports:
-      - "5432:5432"
+      - "${POSTGRES_PORT:-5432}:5432"
     volumes:
       - dormmate_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U user -d dormmate_rebuild_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    build:
+      context: ./backend
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/dormmate_rebuild_db
+      SPRING_DATASOURCE_USERNAME: user
+      SPRING_DATASOURCE_PASSWORD: "1234"
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SPRING_JPA_SHOW_SQL: "true"
+    ports:
+      - "${BACKEND_PORT:-8080}:8080"
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        NEXT_PUBLIC_API_BASE: ${NEXT_PUBLIC_API_BASE:-http://localhost:${BACKEND_PORT:-8080}}
+        NEXT_PUBLIC_FIXTURE: "0"
+    depends_on:
+      - backend
+    environment:
+      NEXT_PUBLIC_API_BASE: ${NEXT_PUBLIC_API_BASE:-http://localhost:${BACKEND_PORT:-8080}}
+      NEXT_PUBLIC_FIXTURE: "0"
+    ports:
+      - "${FRONTEND_PORT:-3000}:3000"
 
 volumes:
   dormmate_postgres_data:
