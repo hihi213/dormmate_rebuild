@@ -175,3 +175,12 @@
 - **근거:** 역할별 Slot 조회 규칙을 미확정 인증 전달 방식과 분리해 단위 테스트할 수 있고, 이후 세션 또는 토큰을 선택해도 Service 업무 규칙을 바꾸지 않기 위해서다.
 - **MVP 경계:** `CurrentActor`는 인증 우회용 fixture가 아니다. Controller에서 실제 인증 주체로 변환하는 작업과 `401`, `403` 통합 검증은 `AUTH-001`과 보안 계약을 확정한 뒤 완료한다.
 - **아직 확정하지 않음:** 세션 또는 Access/Refresh Token 선택, 쿠키·헤더 계약, CSRF, 로그아웃과 다중 기기 정책.
+
+## 15. Phase 0 런타임 기준선 유지
+
+- **상태:** Confirmed
+- **날짜:** 2026-07-26
+- **현재 선택:** Java 21, Spring Boot 4.0.1과 Gradle Wrapper 9.2.1을 Phase 0 기준선으로 사용한다. Java 버전은 저장소 `.mise.toml`과 Gradle Toolchain에 동일하게 선언한다.
+- **근거:** Spring Boot 4가 지원하는 Java 범위 안에서 현재 mise 전역 환경과 기존 졸업 프로젝트가 사용하는 Java 21로 통일한다. 프로젝트별 mise 선언으로 개발 장비의 전역 설정에만 의존하지 않고 Gradle 컴파일 기준과 실행 JDK의 불일치를 방지한다.
+- **테스트 DB:** OrbStack의 Docker 호환 엔진에서 PostgreSQL 16 Testcontainers와 Spring Boot `@ServiceConnection`을 사용해 로컬 DB 상태에 의존하지 않는 통합 테스트 기준선을 구성한다.
+- **재검토 조건:** 사용 중인 라이브러리의 호환성 문제, 보안 지원 문제 또는 배포 환경 제약이 확인될 때 버전 변경을 별도 Task로 검토한다.

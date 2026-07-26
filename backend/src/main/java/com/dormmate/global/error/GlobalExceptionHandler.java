@@ -26,11 +26,11 @@ public class GlobalExceptionHandler {
             java.util.List<String> messages = (java.util.List<String>) errors.get(fieldError.getField());
             messages.add(fieldError.getDefaultMessage());
         }
-        ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.UNPROCESSABLE_ENTITY, "입력값이 유효하지 않습니다.");
-        problem.setTitle(HttpStatus.UNPROCESSABLE_ENTITY.getReasonPhrase());
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.UNPROCESSABLE_CONTENT, "입력값이 유효하지 않습니다.");
+        problem.setTitle(HttpStatus.UNPROCESSABLE_CONTENT.getReasonPhrase());
         problem.setProperty("code", "VALIDATION_FAILED");
         problem.setProperty("errors", errors);
-        return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(problem);
+        return ResponseEntity.status(HttpStatus.UNPROCESSABLE_CONTENT).body(problem);
     }
 
     @ExceptionHandler(ConstraintViolationException.class)
@@ -43,11 +43,11 @@ public class GlobalExceptionHandler {
             java.util.List<String> messages = (java.util.List<String>) errors.get(path);
             messages.add(violation.getMessage());
         });
-        ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.UNPROCESSABLE_ENTITY, "입력값이 유효하지 않습니다.");
-        problem.setTitle(HttpStatus.UNPROCESSABLE_ENTITY.getReasonPhrase());
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.UNPROCESSABLE_CONTENT, "입력값이 유효하지 않습니다.");
+        problem.setTitle(HttpStatus.UNPROCESSABLE_CONTENT.getReasonPhrase());
         problem.setProperty("code", "VALIDATION_FAILED");
         problem.setProperty("errors", errors);
-        return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(problem);
+        return ResponseEntity.status(HttpStatus.UNPROCESSABLE_CONTENT).body(problem);
     }
 
     @ExceptionHandler(HttpMessageNotReadableException.class)

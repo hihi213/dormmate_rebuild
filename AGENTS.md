@@ -191,6 +191,18 @@ Feature Inventory는 관련 배경, 명시된 업무 사실과 누락된 정책 
 
 ---
 
+### 실행 환경
+
+- 언어 런타임은 mise로 관리한다. 저장소에 `.mise.toml`이 있으면 전역 버전을 추정하지 않고 해당 프로젝트 선언을 따른다.
+- 런타임에 영향을 받는 명령은 가능한 경우 `mise exec -- <command>`로 실행해 프로젝트 버전을 검증한다.
+- 로컬 컨테이너와 Testcontainers는 OrbStack의 Docker 호환 엔진을 사용한다.
+- Codex 샌드박스에서 OrbStack 사용자 소켓 접근이 제한되면 같은 검증 명령을 필요한 권한으로 다시 실행하고 그 사실을 결과에 기록한다.
+
+정확한 런타임과 도구 버전은 AGENTS.md에 중복하지 않고 `.mise.toml`, Gradle,
+README와 Tech Decisions를 기준으로 확인한다.
+
+---
+
 ## 6. 구현 범위와 상태 관리
 
 OpenAPI는 API 형식의 계약으로 유지한다. API별 범위와 최종 진행 상태는

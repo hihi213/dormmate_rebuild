@@ -6,7 +6,7 @@
 
 <div align="center">
 
-![Java](https://img.shields.io/badge/Java-17-007396?style=flat-square&logo=openjdk&logoColor=white)
+![Java](https://img.shields.io/badge/Java-21-007396?style=flat-square&logo=openjdk&logoColor=white)
 ![Spring Boot](https://img.shields.io/badge/Spring%20Boot-4.0.1-6DB33F?style=flat-square&logo=springboot&logoColor=white)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-4169E1?style=flat-square&logo=postgresql&logoColor=white)
 ![Next.js](https://img.shields.io/badge/Next.js-15.1.9-000000?style=flat-square&logo=nextdotjs&logoColor=white)
@@ -78,7 +78,7 @@ AI는 설계 검토, 코드 리뷰, 테스트 누락 탐색과 오류 분석에 
 - `User`, `FridgeSlot`, `FridgeBundle`, `FridgeItem` 스켈레톤 존재
 - 첫 번째 수직 슬라이스인 냉장고 칸 조회 설계 진행 중
 - Slot 수직 슬라이스 범위의 점진적 ERD 작성, 인증 전략은 검토 전
-- 독립된 테스트 DB 구성이 없어 현재 ApplicationContext 로딩과 관련 테스트 실패
+- OrbStack의 Docker 호환 엔진에서 PostgreSQL Testcontainers 기준선과 전체 백엔드 테스트 통과
 - 핵심 사용자 API는 아직 구현 완료 상태가 아님
 
 코드나 OpenAPI 경로가 존재한다는 이유만으로 구현 완료로 표시하지 않습니다. 관련 테스트, 계약, 권한과 주요 실패 흐름까지 검증한 기능만 완료로 판단합니다. API별 범위와 상태는 [API 구현 현황](./docs/10_Workspace/API_Implementation_Status.md)에서 관리합니다.
@@ -103,7 +103,6 @@ OpenAPI는 목표 API의 초기 계약으로 사용하되, 불완전한 항목�
 - 포장 등록·조회·수정·소프트 삭제
 - 물품 등록·수정·소프트 삭제
 - 소유권 검증
-- 검사 중 변경 제한
 - 검색과 페이징
 
 #### 2. 인증과 권한
@@ -123,6 +122,7 @@ OpenAPI는 목표 API의 초기 계약으로 사용하되, 불완전한 항목�
 - 검사 제출
 - 중복 시작과 중복 제출 방지
 - 제출 이후 변경 금지
+- 검사 중 포장·물품 변경 제한
 
 #### 4. 최소 관리자
 
@@ -158,7 +158,7 @@ OpenAPI는 목표 API의 초기 계약으로 사용하되, 불완전한 항목�
 
 ### Backend
 
-- Java 17
+- Java 21 — 저장소 `.mise.toml`과 Gradle Toolchain으로 통일
 - Spring Boot 4.0.1
 - Spring Data JPA
 - Bean Validation
@@ -183,7 +183,9 @@ OpenAPI는 목표 API의 초기 계약으로 사용하되, 불완전한 항목�
 
 - JUnit 5
 - Spring Boot Test
-- PostgreSQL 기반 통합 테스트 또는 Testcontainers 검토
+- PostgreSQL 16 Testcontainers 기반 통합 테스트
+- OrbStack의 Docker 호환 엔진 사용
+- mise 기반 Java 런타임 관리
 - 프론트 lint 및 build
 - 핵심 사용자 흐름 검증
 
@@ -208,6 +210,7 @@ Redis와 분산 락은 DB 제약조건, 트랜잭션과 JPA 락으로 해결하�
 DormMate/
 ├── frontend/                          # 기존 Next.js 프론트엔드
 ├── backend/                           # Spring Boot 백엔드 리빌드
+├── .mise.toml                         # 프로젝트 Java 런타임 선언
 ├── docs/
 │   ├── 00_Blueprint/                  # 원본 요구사항과 UI 분석(Read Only)
 │   ├── 10_Workspace/                  # Phase, Task, 문제 해결 기록
@@ -268,15 +271,16 @@ docker compose down -v
 
 ```bash
 cd backend
-./gradlew bootRun
+mise exec -- ./gradlew bootRun
 ```
 
 ```bash
 cd backend
-./gradlew test
+mise exec -- ./gradlew test
 ```
 
-현재 테스트는 독립된 테스트 DB 구성이 없어 ApplicationContext 로딩 단계에서 실패합니다. 기준선 복구 후 정상 실행 결과를 갱신할 예정입니다.
+백엔드 전체 테스트는 OrbStack의 Docker 호환 엔진과 PostgreSQL 16
+Testcontainers를 사용합니다. 테스트 실행 전에 OrbStack이 실행 중이어야 합니다.
 
 ### 프론트엔드
 

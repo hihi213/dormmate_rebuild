@@ -8,6 +8,15 @@ scope: MVP
 
 > 인증된 사용자를 식별하고 역할·소유권 검증의 기반을 제공한다.
 
+## Phase 1 선행 경계
+
+Phase 1 Service는 Tech Decisions 14장의 내부 인증 주체를 통해 `userId`, 역할과
+담당 층을 입력받는다. 이는 인증 fixture나 전달 방식 확정이 아니다.
+
+`GET /fridge/slots` Controller를 실제 API로 완료하려면 이 Phase에서
+`AUTH-001`과 보안 계약을 먼저 확정하고 실제 인증 주체 연결, `401`, `403`을
+검증해야 한다.
+
 ## 선행 결정
 
 - `AUTH-001`: 세션 또는 Access/Refresh Token
