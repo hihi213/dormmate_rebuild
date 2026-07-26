@@ -2095,6 +2095,31 @@
         }
       }
     },
+    "/csrf": {
+      "get": {
+        "tags": [
+          "auth-controller"
+        ],
+        "summary": "CSRF 토큰 발급",
+        "description": "SPA가 로그인, 로그아웃과 상태 변경 요청 헤더에 전달할 CSRF 토큰을 발급한다.",
+        "operationId": "getCsrfToken",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CsrfTokenResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          }
+        }
+      }
+    },
     "/healthz": {
       "get": {
         "tags": [
@@ -2185,6 +2210,11 @@
         "summary": "접근 가능한 냉장고 칸 조회",
         "description": "인증 사용자의 역할과 배정 범위 안에서 냉장고 칸을 조회한다. 거주자는 현재 배정된 칸을 운영 상태와 관계없이 조회하므로 RETIRED 칸도 상태와 함께 반환될 수 있다. floor는 권한 범위 안에서만 필터링하며, 존재하지 않는 양수 층은 빈 목록을 반환한다. 결과는 floorNo, fridgeId, displayName, slotId 오름차순으로 정렬한다.",
         "operationId": "getSlots",
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
         "parameters": [
           {
             "name": "floor",
@@ -2832,7 +2862,36 @@
     }
   },
   "components": {
+    "securitySchemes": {
+      "sessionCookie": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "JSESSIONID",
+        "description": "Spring Security 서버 세션 쿠키. HttpOnly와 SameSite=Lax를 적용하고 배포 HTTPS 환경에서는 Secure를 적용한다."
+      }
+    },
     "schemas": {
+      "CsrfTokenResponse": {
+        "required": [
+          "headerName",
+          "parameterName",
+          "token"
+        ],
+        "type": "object",
+        "properties": {
+          "headerName": {
+            "type": "string",
+            "example": "X-CSRF-TOKEN"
+          },
+          "parameterName": {
+            "type": "string",
+            "example": "_csrf"
+          },
+          "token": {
+            "type": "string"
+          }
+        }
+      },
       "ProblemDetail": {
         "type": "object",
         "properties": {

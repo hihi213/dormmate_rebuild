@@ -16,6 +16,11 @@ policy:
   - INV-020
   - INV-021
   - INV-023
+  - AUTH-001
+  - AUTH-006
+  - AUTH-007
+  - AUTH-008
+  - AUTH-009
 tags:
   - task
   - fridge
@@ -61,14 +66,19 @@ tags:
 ### 권한과 조회 범위
 
 - 거주자: 자신에게 현재 배정된 Slot. `RETIRED`를 포함해 운영 상태로 숨기지 않는다.
-- 층별장: 담당 층의 Slot
+- 층별장: 자신에게 활성 관리 배정된 Slot
 - 관리자: 전체 Slot
 - `floor`는 각 역할의 조회 범위를 넓히지 않고 기존 범위 안에서만 필터링한다.
 
-인증 전달 방식은 `AUTH-001` 결정 전이므로 구현 단계에서 임의로 확정하지 않는다.
-Service 권한 로직은 Tech Decisions 14장의 내부 인증 주체 경계를 사용해 인증 전달
-기술과 분리한다. Controller의 실제 인증 통합과 `401`, `403` 완료 판정은
-`AUTH-001` 확정 후 수행한다.
+인증은 `AUTH-001`의 Spring Security 서버 세션을 사용한다. Controller 경계에서
+인증 주체를 `CurrentActor(userId, accountAuthorities)`로 변환하고, Service는 거주 배정과
+층별장 관리 Slot을 DB에서 조회한다. 관리 Slot 목록을 세션이나 `CurrentActor`에
+캐시하지 않는다.
+
+- 세션이 없거나 만료되어 인증 주체를 복원하지 못하면 `401`
+- 인증됐지만 거주자·층별장·관리자 중 지원되는 업무 자격이 없으면 `403`
+- 거주자의 현재 Slot 배정이 없거나 층별장의 담당 범위에 Slot이 없으면 `200` 빈 목록
+- 권한 밖의 `floor` 필터도 조회 범위를 넓히지 않고 `200` 빈 목록
 
 ### 응답
 
@@ -122,6 +132,7 @@ Service 권한 로직은 Tech Decisions 14장의 내부 인증 주체 경계를 
 - `Fridge`: Slot 소속과 층 조회에 필요한 최소 참조
 - `FridgeSlot`: Slot 메타데이터와 상태
 - `FridgeSlotAssignment`: 사용자와 Slot의 현재 배정
+- `FridgeSlotManagerAssignment`: 층별장의 현재 Slot 관리 범위 조회
 - `FridgeBundle`: `occupiedCount` 계산에 필요한 최소 참조와 삭제 상태
 
 필드와 관계는 `02_ERD_&_Schema.md`의 현재 확정 범위를 따른다. 인증 자격증명, Room 전체 모델과 Inspection 모델은 이번 Task에서 확정하지 않는다.
@@ -142,7 +153,7 @@ Service 권한 로직은 Tech Decisions 14장의 내부 인증 주체 경계를 
 - `totalCount`가 권한과 `floor` 필터 적용 결과와 일치
 - Slot 수에 비례해 `occupiedCount` 조회 쿼리가 증가하지 않음
 
-지원되지 않는 역할의 `403` 처리 조건은 인증·권한 모델을 확정할 때 결정한다.
+지원되지 않는 역할의 `403`과 데이터가 없는 `200`의 구분은 `AUTH-007`을 따른다.
 동일 냉장고의 활성 `displayName` 중복 방지는 Slot 생성·수정과 마이그레이션
 Task에서 검증한다.
 
@@ -162,8 +173,8 @@ Task에서 검증한다.
 - 테스트용 DB를 포함한 관련 테스트가 통과한다.
 - 요청·응답과 `ProblemDetail`이 OpenAPI와 일치한다.
 - `INV-001`과 역할별 조회 범위를 검증한다.
-- 인증 방식이 미정인 부분을 임의 구현하지 않는다.
-- Controller 인증 통합을 완료하지 못하면 API 상태를 `Implemented`로 변경하지 않는다.
+- Spring Security 세션 인증과 `CurrentActor` 변환을 통합 검증한다.
+- `401`, `403`과 권한 범위 내 빈 목록을 각각 검증한다.
 - 구현 후 필요한 경우에만 ERD의 확정 범위를 확장한다.
 
 ## 7. 관련 기록

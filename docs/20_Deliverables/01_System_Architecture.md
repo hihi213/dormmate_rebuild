@@ -19,7 +19,9 @@ flowchart LR
 | PostgreSQL | 운영·로컬 데이터 저장 | Existing |
 | Docker Compose | 로컬 실행 환경 | Existing |
 
-현재 인증 방식은 `AUTH-001`의 `Review Required` 상태다. 프론트는 Bearer access/refresh token을 사용하지만, Rebuild가 이를 채택한다는 의미는 아니다.
+MVP 인증은 Spring Security 서버 세션과 CSRF 보호를 사용한다. 현재 프론트의
+Bearer access/refresh token과 `deviceId` 흐름은 확정 계약이 아니며, 사용자가
+연동을 요청할 때 세션 쿠키와 CSRF 헤더 방식으로 교체한다.
 
 ## 2. Request Lifecycle
 

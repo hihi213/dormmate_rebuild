@@ -27,7 +27,7 @@
 
 | Method | Path | Scope | Status | Policy / Blocker | Task |
 | --- | --- | --- | --- | --- | --- |
-| GET | `/fridge/slots` | MVP | In Progress | `INV-001`, `INV-009`~`INV-012`, `INV-019`~`INV-021`, `INV-023`, `INV-024`; Controller 인증 통합은 `AUTH-001` 결정 필요, `INV-022`는 구현 비차단 | [Slot 조회 및 검증](./Tasks/Task_Slot%20조회%20및%20검증.md) |
+| GET | `/fridge/slots` | MVP | In Progress | `INV-001`, `INV-009`~`INV-012`, `INV-019`~`INV-021`, `INV-023`, `INV-024`, `AUTH-001`, `AUTH-006`~`AUTH-009`; Slot 영속성 세부 제약과 응답 enum 확정 필요, `INV-022`는 구현 비차단 | [Slot 조회 및 검증](./Tasks/Task_Slot%20조회%20및%20검증.md) |
 | GET | `/fridge/bundles` | MVP | Review Required | `INV-007`: 검색·필터·페이징 범위 | - |
 | POST | `/fridge/bundles` | MVP | Review Required | `INV-001`~`INV-006`, `INV-013`, `INV-014` | - |
 | GET | `/fridge/bundles/{bundleId}` | MVP | Not Started | `INV-001`~`INV-005` | - |
@@ -41,12 +41,14 @@
 
 | Method | Path | Scope | Status | Policy / Blocker |
 | --- | --- | --- | --- | --- |
-| POST | `/auth/login` | MVP | Review Required | `AUTH-001`, `AUTH-003`, `AUTH-005` |
-| POST | `/auth/logout` | MVP | Review Required | `AUTH-001`, `AUTH-005` |
-| POST | `/auth/refresh` | Conditional MVP | Review Required | Token 인증 선택 시 포함, `AUTH-001`, `AUTH-005` |
-| GET | `/profile/me` | MVP | Review Required | 인증 방식과 응답 필수 필드 |
+| POST | `/auth/login` | MVP | Review Required | 세션 생성 성공 응답과 실패 오류 계약 확정 필요, `AUTH-001`, `AUTH-003`, `AUTH-008` |
+| POST | `/auth/logout` | MVP | Review Required | 세션 무효화 응답과 CSRF 계약 확정 필요, `AUTH-001`, `AUTH-005`, `AUTH-008` |
+| GET | `/csrf` | MVP | Not Started | `AUTH-008`; 로그인·로그아웃과 상태 변경 요청 전에 토큰 발급 |
+| GET | `/profile/me` | MVP | Review Required | 응답 필수 필드 확정 필요 |
 
 온라인 회원가입 API는 현재 OpenAPI에 없으며 `AUTH-002` 결정 전 추가하지 않는다.
+기존 `/auth/refresh`는 세션 인증 MVP에서 사용하지 않는다. 기존 OpenAPI 계약의
+제거 또는 Legacy 표시는 인증 API 계약 Task에서 처리한다.
 
 ### 검사
 

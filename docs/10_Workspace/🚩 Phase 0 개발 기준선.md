@@ -36,6 +36,6 @@ scope: MVP
 
 ## 다음 Phase 선행 조건
 
-실제 인증 전달 방식과 OpenAPI 보안 계약은 개발환경 기준선의 완료 조건이 아니다.
-`GET /fridge/slots` Controller 통합 전에 `AUTH-001`을 확정하며, 관련 상태는
-Phase 1 Slot Task와 Phase 2 문서에서 관리한다.
+인증 전달 방식과 Slot 조회의 OpenAPI 보안 계약은 `AUTH-001`, `AUTH-007`,
+`AUTH-008`로 확정했다. 실제 Spring Security 구성과 인증 통합은 개발환경
+기준선이 아니라 Phase 1 Slot Task와 Phase 2에서 구현한다.
