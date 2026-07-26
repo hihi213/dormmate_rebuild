@@ -12,8 +12,8 @@ erDiagram
     FRIDGE ||--|{ FRIDGE_SLOT : contains
     USER ||--o{ FRIDGE_SLOT_ASSIGNMENT : assigned
     FRIDGE_SLOT ||--o{ FRIDGE_SLOT_ASSIGNMENT : grants_access
-    USER ||--o{ FRIDGE_SLOT_MANAGER_ASSIGNMENT : manages
-    FRIDGE_SLOT ||--o{ FRIDGE_SLOT_MANAGER_ASSIGNMENT : grants_management
+    USER ||--o{ SLOT_MANAGER_ASSIGNMENT : manages
+    FRIDGE_SLOT ||--o{ SLOT_MANAGER_ASSIGNMENT : grants_management
     FRIDGE_SLOT ||--o{ FRIDGE_BUNDLE : stores
 ```
 
@@ -23,7 +23,7 @@ erDiagram
 | `Fridge` | Draft | Slot이 소속된 물리적 냉장고와 설치 층 |
 | `FridgeSlot` | Draft | Slot 메타데이터·상태·용량 |
 | `FridgeSlotAssignment` | Draft | 사용자의 현재 Slot 배정 |
-| `FridgeSlotManagerAssignment` | Draft | 층별장의 현재 Slot 관리 배정 |
+| `SlotManagerAssignment` | Draft | 냉장고 담당자의 현재 Slot 관리 배정 |
 | `FridgeBundle` | Partial | 활성 포장 수 집계를 위한 Slot 참조와 삭제 상태 |
 
 `Partial`과 `Draft`는 전체 도메인 모델이 확정됐다는 의미가 아니다. 실제 JPA 매핑과 마이그레이션은 Task 설계·테스트와 함께 확정한다.
@@ -34,7 +34,7 @@ erDiagram
 
 현재 Task에서는 사용자 식별자와 계정 자체에 부여되는 관리자 권한의 경계만
 필요하다. 인증 자격증명과 프로필 필드는 인증 수직 슬라이스에서 확정한다.
-거주 자격과 층별장 여부는 단일 User 역할 값이 아니라 활성 업무 배정으로 조회한다.
+거주 자격과 냉장고 담당자 여부는 단일 User 역할 값이 아니라 활성 업무 배정으로 조회한다.
 
 | Column | Constraint | Status |
 | --- | --- | --- |
@@ -89,12 +89,12 @@ DB 컬럼으로 확정하지 않는다. 검사 잠금 상태와 만료 시각은
 
 현재 배정 중복을 막을 DB 제약 방식은 PostgreSQL 부분 인덱스 사용 여부와 함께 구현 Task에서 확정한다.
 
-### FRIDGE_SLOT_MANAGER_ASSIGNMENT
+### SLOT_MANAGER_ASSIGNMENT
 
 | Column | Constraint | Purpose |
 | --- | --- | --- |
 | `id` | PK, UUID | 담당 배정 식별 |
-| `user_id` | FK → USER | 층별장으로 지정된 활성 거주자 |
+| `user_id` | FK → USER | 냉장고 담당자로 지정된 활성 거주자 |
 | `slot_id` | FK → FRIDGE_SLOT | 관리 대상 Slot |
 | `assigned_at` | NOT NULL | 담당 시작 |
 | `released_at` | NULL 허용 | 담당 종료 |

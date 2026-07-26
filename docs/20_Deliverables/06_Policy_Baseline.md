@@ -118,7 +118,7 @@ Feature Inventory의 `스티커 번호`는 Rebuild 계약의 `라벨 번호(labe
 | INV-006 | MVP | `Confirmed` | 현재 UI의 포장 등록은 물품을 최소 1개 요구한다. 백엔드도 빈 포장 생성을 허용하지 않는다. | 실제 프론트 폼 검증과 사용자 흐름 |
 | INV-007 | MVP | `Review Required` | 목록 검색·필터·통계를 서버에서 수행할 범위와 페이지 크기를 확정해야 한다. | 현재 프론트는 최대 200건을 받아 일부 처리를 클라이언트에서 수행 |
 | INV-008 | MVP | `Review Required` | 삭제 데이터의 보존 기간과 관리자 강제 삭제가 논리 삭제인지 물리 삭제인지 확정해야 한다. | 원본 문서와 MVP 관리자 범위의 세부 의미 미확정 |
-| INV-009 | MVP | `Confirmed` | Slot 조회 범위는 거주자의 현재 배정 Slot과 층별장에게 활성 관리 배정된 Slot의 합집합이며, 관리자는 전체 Slot을 조회한다. 층 필터는 이 범위를 넓히지 않는다. | Slot Task와 Slot 단위 관리 권한 합의 |
+| INV-009 | MVP | `Confirmed` | Slot 조회 범위는 거주자의 현재 배정 Slot과 냉장고 담당자에게 활성 관리 배정된 Slot의 합집합이며, 관리자는 전체 Slot을 조회한다. 층 필터는 이 범위를 넓히지 않는다. | Slot Task와 Slot 단위 관리 권한 합의 |
 | INV-010 | MVP | `Confirmed` | Slot 조회의 잘못된 `view`, 음수 `page`, 범위를 벗어난 `size`는 fallback이나 clamp 없이 `400`으로 거부한다. | 명시적 입력 검증으로 확정 |
 | INV-011 | MVP | `Confirmed` | Slot의 `occupiedCount`는 소프트 삭제되지 않은 활성 포장 수다. | Slot Task 확정. `displayName` 정책은 `INV-019`로 분리했다. |
 | INV-012 | MVP | `Confirmed` | Slot의 영속 식별자는 `slotId`이며 배정, 포장과 검사 관계는 이 ID를 사용한다. | Feature Inventory의 칸 ID 저장 정책. 2026-07-26 합의로 표시·정렬용 `slotIndex` 전제를 제거했다. |
@@ -142,10 +142,11 @@ Feature Inventory의 `스티커 번호`는 Rebuild 계약의 `라벨 번호(labe
 | AUTH-001 | MVP | `Confirmed` | Spring Security 기반 서버 세션 인증을 사용한다. 브라우저는 `HttpOnly`, `SameSite=Lax` 세션 쿠키를 전달하고 배포 HTTPS 환경에서는 `Secure`를 적용한다. Access/Refresh Token과 `deviceId`는 MVP 인증 계약에서 사용하지 않는다. | 2026-07-26 사용자 합의. 단일 웹 애플리케이션과 단일 백엔드 인스턴스에 필요한 가장 단순한 인증 방식을 선택했다. |
 | AUTH-002 | MVP | `Review Required` | 온라인 회원가입을 제공할지, 관리자가 계정을 발급할지 확정해야 한다. | Feature Inventory와 현재 비활성 회원가입 UI가 충돌 |
 | AUTH-003 | MVP | `Confirmed` | 비활성화된 사용자는 로그인할 수 없다. | Feature Inventory |
-| AUTH-004 | MVP | `Confirmed` | 거주자, 층별장, 관리자의 권한을 서버가 검증한다. 층별장은 거주자와 배타적인 단일 역할이 아니라 거주자에게 추가되는 기간성 담당 업무다. | Feature Inventory, UI 흐름과 2026-07-26 사용자 합의 |
+| AUTH-004 | MVP | `Confirmed` | 관리자 계정 권한, 거주 자격과 냉장고 관리 업무를 분리하고 각 API에서 서버가 검증한다. 냉장고 담당자는 거주자에게 추가되는 기간성 업무다. | Feature Inventory의 층별장 역할을 Rebuild 업무 배정으로 재설계 |
 | AUTH-005 | MVP | `Review Required` | 로그아웃은 세션 무효화로 처리한다. idle timeout, 동시 로그인 제한과 다중 기기 정책의 세부값은 인증 구현 Task에서 확정한다. Refresh Token API는 세션 인증 MVP에서 사용하지 않는다. | 세션 인증 선택에 따른 범위 재분류 |
-| AUTH-006 | MVP | `Confirmed` | 층별장 관리 권한은 `FridgeSlotManagerAssignment`로 Slot 단위 저장한다. 지정 대상은 활성 거주자여야 하고 기존 거주자 권한을 유지한다. 거주 층과 관리 Slot의 층은 영구적인 DB 제약으로 묶지 않는다. | 일부 Slot·다른 층 담당 확장과 명시적 권한 이력을 위한 2026-07-26 사용자 합의 |
+| AUTH-006 | MVP | `Confirmed` | 냉장고 관리 권한은 `SlotManagerAssignment`로 Slot 단위 저장한다. 냉장고 담당자 지정 대상은 활성 거주자여야 하고 기존 거주자 권한을 유지한다. 거주 층과 관리 Slot의 층은 영구적인 DB 제약으로 묶지 않는다. | 일부 Slot·다른 층 담당 확장과 명시적 권한 이력을 위한 2026-07-26 사용자 합의 |
 | AUTH-009 | MVP | `Confirmed` | 관리자 UI는 층 전체와 개별 Slot 선택을 제공한다. 층 전체 선택은 선택 시점의 해당 층 활성 Slot에 관리 배정을 일괄 생성하는 편의 기능이며, 이후 추가되는 Slot을 자동 포함하지 않는다. | 백엔드 권한 단위를 Slot으로 통일한 MVP 결정 |
+| AUTH-010 | MVP | `Confirmed` | 관리자는 거주자가 아니며 거주자 자격을 상속하지 않는다. 계정의 `ADMIN` 권한으로 전체 조회와 별도 운영 행위를 수행한다. 일반 거주자 물품 등록 API를 관리자의 소유물 생성에 사용하지 않는다. | 소유자와 운영 행위자를 분리한 2026-07-26 사용자 합의 |
 | AUTH-007 | MVP | `Confirmed` | 보호 API에서 인증 주체를 복원하지 못하면 `401`, 인증됐지만 API를 호출할 역할·업무 자격이 없으면 `403`을 반환한다. 권한 범위 안에 조회할 데이터가 없는 경우는 `200` 빈 목록이다. | Slot 조회 오류 의미 합의 |
 | AUTH-008 | MVP | `Confirmed` | 세션 쿠키를 자동 전달하는 브라우저 요청은 CSRF 보호를 유지한다. SPA는 발급받은 CSRF 토큰을 변경 요청 헤더에 전달하며 로그인과 로그아웃도 CSRF 검증 대상이다. | Spring Security 세션 인증의 보안 경계 |
 
@@ -153,12 +154,12 @@ Feature Inventory의 `스티커 번호`는 Rebuild 계약의 `라벨 번호(labe
 
 | ID | Scope | Status | Policy | Evidence / Notes |
 | --- | --- | --- | --- | --- |
-| INSP-001 | MVP | `Confirmed` | 층별장은 자신에게 활성 관리 배정된 Slot만 검사하고 처리할 수 있다. 층 전체 검사에서 필요한 관리 범위와 일부 Slot 담당자의 검사 흐름은 Phase 3에서 확정한다. | Feature Inventory의 층 담당 의도를 Slot 단위 관리 권한에 맞게 재설계 |
+| INSP-001 | MVP | `Confirmed` | 냉장고 담당자는 자신에게 활성 관리 배정된 Slot만 검사하고 처리할 수 있다. 층 전체 검사에서 필요한 관리 범위와 일부 Slot 담당자의 검사 흐름은 Phase 3에서 확정한다. | Feature Inventory의 층 담당 의도를 Slot 단위 관리 권한에 맞게 재설계 |
 | INSP-002 | MVP | `Confirmed` | 모든 검사 대상에 PASS, WARNING 또는 DISPOSE 조치가 기록되어야 제출할 수 있다. | Feature Inventory와 실제 프론트 제출 조건 |
 | INSP-003 | MVP | `Confirmed` | 제출된 검사 결과는 MVP에서 일반 수정할 수 없다. 정정 흐름은 별도 확장 정책으로 다룬다. | MVP 범위 합의 |
 | INSP-004 | MVP | `Confirmed` | 중복 검사 시작과 중복 제출이 동일 결과를 두 번 생성하지 않도록 서버가 보장한다. | MVP 범위와 동시성 핵심 시나리오 |
 | INSP-005 | MVP | `Review Required` | 검사 잠금의 정확한 대상, 만료 시점, 활동 시 연장 기준과 강제 종료 권한을 확정해야 한다. | Feature Inventory는 30분 잠금을 제시하나 상세 계약 미확정 |
-| INSP-006 | Post-MVP | `Post-MVP` | 다중 층별장 합류와 SSE 실시간 동기화는 Release 1에서 제외한다. | Feature Inventory의 확장 항목 |
+| INSP-006 | Post-MVP | `Post-MVP` | 여러 냉장고 담당자의 검사 합류와 SSE 실시간 동기화는 Release 1에서 제외한다. | Feature Inventory의 다중 층별장 확장 항목 |
 | INSP-007 | Post-MVP | `Post-MVP` | 제출 결과 정정과 벌점 재계산은 Release 1에서 제외한다. | MVP 범위 합의 |
 
 ### 5.5 관리자와 알림
@@ -167,6 +168,7 @@ Feature Inventory의 `스티커 번호`는 Rebuild 계약의 `라벨 번호(labe
 | --- | --- | --- | --- | --- |
 | ADM-001 | MVP | `Confirmed` | 관리자 API는 서버에서 관리자 권한을 검증한다. UI의 메뉴 숨김만으로 권한을 보장하지 않는다. | 보안 기본 원칙 |
 | ADM-002 | MVP | `Review Required` | 최소 관리자 기능별 조회 범위와 강제 삭제·상태 변경의 의미를 확정해야 한다. | README의 MVP 범위는 있으나 세부 정책 미확정 |
+| ADM-003 | MVP | `Confirmed` | 관리자는 전체 냉장고 데이터를 조회할 수 있지만 거주자 권한을 상속하지 않는다. 운영상 정정·강제 삭제는 일반 사용자 API와 구분하고 수행자와 사유를 기록한다. 관리자 대리 등록은 실제 요구가 생길 때 대상 거주자를 명시하는 별도 계약으로 검토한다. | 관리자와 데이터 소유자를 분리한 MVP 경계 |
 | NOTI-001 | Post-MVP | `Post-MVP` | 알림 저장·읽음 처리는 Release 1 이후 구현한다. | MVP 범위 합의 |
 | NOTI-002 | Post-MVP | `Post-MVP` | Web Push 구독과 서버 발송은 별도 계약과 운영 정책을 확정한 뒤 구현한다. | 현재 프론트에는 표시용 Service Worker만 있고 구독 등록 흐름은 확인되지 않음 |
 

@@ -66,18 +66,18 @@ tags:
 ### 권한과 조회 범위
 
 - 거주자: 자신에게 현재 배정된 Slot. `RETIRED`를 포함해 운영 상태로 숨기지 않는다.
-- 층별장: 자신에게 활성 관리 배정된 Slot
+- 냉장고 담당자: 자신에게 활성 관리 배정된 Slot
 - 관리자: 전체 Slot
 - `floor`는 각 역할의 조회 범위를 넓히지 않고 기존 범위 안에서만 필터링한다.
 
 인증은 `AUTH-001`의 Spring Security 서버 세션을 사용한다. Controller 경계에서
 인증 주체를 `CurrentActor(userId, accountAuthorities)`로 변환하고, Service는 거주 배정과
-층별장 관리 Slot을 DB에서 조회한다. 관리 Slot 목록을 세션이나 `CurrentActor`에
+냉장고 담당자의 관리 Slot을 DB에서 조회한다. 관리 Slot 목록을 세션이나 `CurrentActor`에
 캐시하지 않는다.
 
 - 세션이 없거나 만료되어 인증 주체를 복원하지 못하면 `401`
-- 인증됐지만 거주자·층별장·관리자 중 지원되는 업무 자격이 없으면 `403`
-- 거주자의 현재 Slot 배정이 없거나 층별장의 담당 범위에 Slot이 없으면 `200` 빈 목록
+- 인증됐지만 거주자·냉장고 담당자·관리자 중 지원되는 업무 자격이 없으면 `403`
+- 거주자의 현재 Slot 배정이 없거나 냉장고 담당자의 관리 범위에 Slot이 없으면 `200` 빈 목록
 - 권한 밖의 `floor` 필터도 조회 범위를 넓히지 않고 `200` 빈 목록
 
 ### 응답
@@ -132,7 +132,7 @@ tags:
 - `Fridge`: Slot 소속과 층 조회에 필요한 최소 참조
 - `FridgeSlot`: Slot 메타데이터와 상태
 - `FridgeSlotAssignment`: 사용자와 Slot의 현재 배정
-- `FridgeSlotManagerAssignment`: 층별장의 현재 Slot 관리 범위 조회
+- `SlotManagerAssignment`: 냉장고 담당자의 현재 Slot 관리 범위 조회
 - `FridgeBundle`: `occupiedCount` 계산에 필요한 최소 참조와 삭제 상태
 
 필드와 관계는 `02_ERD_&_Schema.md`의 현재 확정 범위를 따른다. 인증 자격증명, Room 전체 모델과 Inspection 모델은 이번 Task에서 확정하지 않는다.

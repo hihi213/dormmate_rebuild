@@ -833,114 +833,6 @@
         }
       }
     },
-    "/admin/users/{userId}/roles/floor-manager": {
-      "post": {
-        "tags": [
-          "admin-dashboard-controller"
-        ],
-        "operationId": "promoteFloorManager",
-        "parameters": [
-          {
-            "name": "userId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/RoleChangeRequest"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "OK"
-          },
-          "400": {
-            "$ref": "#/components/responses/ProblemDetailResponse"
-          },
-          "401": {
-            "$ref": "#/components/responses/ProblemDetailResponse"
-          },
-          "403": {
-            "$ref": "#/components/responses/ProblemDetailResponse"
-          },
-          "404": {
-            "$ref": "#/components/responses/ProblemDetailResponse"
-          },
-          "409": {
-            "$ref": "#/components/responses/ProblemDetailResponse"
-          },
-          "422": {
-            "$ref": "#/components/responses/ProblemDetailResponse"
-          },
-          "500": {
-            "$ref": "#/components/responses/ProblemDetailResponse"
-          }
-        }
-      },
-      "delete": {
-        "tags": [
-          "admin-dashboard-controller"
-        ],
-        "operationId": "demoteFloorManager",
-        "parameters": [
-          {
-            "name": "userId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/RoleChangeRequest"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "OK"
-          },
-          "400": {
-            "$ref": "#/components/responses/ProblemDetailResponse"
-          },
-          "401": {
-            "$ref": "#/components/responses/ProblemDetailResponse"
-          },
-          "403": {
-            "$ref": "#/components/responses/ProblemDetailResponse"
-          },
-          "404": {
-            "$ref": "#/components/responses/ProblemDetailResponse"
-          },
-          "409": {
-            "$ref": "#/components/responses/ProblemDetailResponse"
-          },
-          "422": {
-            "$ref": "#/components/responses/ProblemDetailResponse"
-          },
-          "500": {
-            "$ref": "#/components/responses/ProblemDetailResponse"
-          }
-        }
-      }
-    },
     "/admin/seed/fridge-demo": {
       "post": {
         "tags": [
@@ -2406,7 +2298,7 @@
             }
           },
           {
-            "name": "floorManagerOnly",
+            "name": "fridgeManagerOnly",
             "in": "query",
             "required": false,
             "schema": {
@@ -3646,8 +3538,9 @@
           "email": {
             "type": "string"
           },
-          "roles": {
+          "accountAuthorities": {
             "type": "array",
+            "description": "계정 자체에 부여된 권한. 거주 자격과 냉장고 관리 업무는 포함하지 않는다.",
             "items": {
               "type": "string"
             }
@@ -3655,8 +3548,13 @@
           "primaryRoom": {
             "$ref": "#/components/schemas/RoomAssignmentResponse"
           },
-          "isFloorManager": {
-            "type": "boolean"
+          "isResident": {
+            "type": "boolean",
+            "description": "활성 거주 배정이 존재하는지 여부"
+          },
+          "isFridgeManager": {
+            "type": "boolean",
+            "description": "활성 SlotManagerAssignment가 하나 이상 존재하는지 여부"
           },
           "isAdmin": {
             "type": "boolean"
@@ -3697,19 +3595,6 @@
             "type": "string"
           },
           "deviceId": {
-            "type": "string"
-          }
-        }
-      },
-      "RoleChangeRequest": {
-        "required": [
-          "reason"
-        ],
-        "type": "object",
-        "properties": {
-          "reason": {
-            "maxLength": 200,
-            "minLength": 2,
             "type": "string"
           }
         }
@@ -4443,14 +4328,18 @@
             "type": "integer",
             "format": "int32"
           },
-          "role": {
-            "type": "string"
-          },
-          "roles": {
+          "accountAuthorities": {
             "type": "array",
+            "description": "계정 자체에 부여된 권한",
             "items": {
               "type": "string"
             }
+          },
+          "isResident": {
+            "type": "boolean"
+          },
+          "isFridgeManager": {
+            "type": "boolean"
           },
           "status": {
             "type": "string"

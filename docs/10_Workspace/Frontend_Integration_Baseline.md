@@ -67,6 +67,11 @@ mock 또는 fallback 화면은 API 구현 완료의 증거가 아니다.
   개념인지 확인하고 확정 계약에 맞춰 타입과 매핑을 통일
 - `A001` 계산은 `INV-017`의 `labelDisplay` 계약을 확정한 뒤 제거하거나
   `displayName + labelNumber` 기반 표현으로 변경
+- 기존 `FLOOR_MANAGER`, `isFloorManager`, `floorManagerOnly`와 역할
+  승격·해제 호출을 제거하고, `isFridgeManager`, `fridgeManagerOnly`와
+  Slot 관리 배정 흐름으로 교체
+- 관리자는 거주자 권한을 상속하지 않으므로 일반 물품 등록 UI를 관리자에게
+  권한 상속 방식으로 노출하지 않음
 
 ## 4. 연동 완료 기준
 

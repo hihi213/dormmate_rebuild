@@ -11,7 +11,7 @@ scope: MVP
 ## Phase 1 선행 경계
 
 Phase 1 Service는 Tech Decisions 14장의 내부 인증 주체를 통해 `userId`와
-authorities를 입력받는다. 거주 배정과 층별장 관리 Slot은 변경 가능한 업무
+authorities를 입력받는다. 거주 배정과 냉장고 담당자의 관리 Slot은 변경 가능한 업무
 데이터이므로 Service가 DB에서 조회한다.
 
 `AUTH-001`의 서버 세션 인증, CSRF와 `401`·`403` 의미는 확정됐다.
