@@ -1,158 +1,172 @@
 ---
 type: task
 status: 🟡 Doing
-created: 01-03 20:07
+scope: MVP
+created: 2026-01-03
+updated: 2026-07-26
+supersedes:
+  - Task_Slot 조회 및 검증_재구조화
+policy:
+  - INV-001
+  - INV-009
+  - INV-010
+  - INV-011
+  - INV-012
+  - INV-019
+  - INV-020
+  - INV-021
+  - INV-023
 tags:
   - task
----
-> Target API 상세:
-
-- **Endpoint:** `GET /fridge/slots`
-- **Query Params:**
-  - `floor` (int, optional)
-  - `view` (string, optional, default=`full`, unknown → `full`)
-  - `page` (int, optional, default=0)
-  - `size` (int, optional, default=20, range 1~200)
-- **Response JSON (FridgeSlotListResponse):**
-	- items 배열 + 페이지 정보를 반환하면 되겠다.
-```JSON
-{
-  "items": [
-    {
-      "slotId": "uuid",
-      "slotIndex": 0,
-      "slotLetter": "A",
-      "floorNo": 2,
-      "floorCode": "2F",
-      "compartmentType": "FRIDGE",
-      "resourceStatus": "ACTIVE",
-      "slotStatus": "ACTIVE",
-      "locked": false,
-      "lockedUntil": "2024-01-01T12:00:00Z",
-      "capacity": 3,
-      "displayName": "2F-A-01",
-      "occupiedCount": 1
-    }
-  ],
-  "totalCount": 1,
-  "page": 0,
-  "size": 20,
-  "totalPages": 1
-}
-```
-
+  - fridge
+  - slot
 ---
 
-## 1. 🥩 [Step 3] 실무 구현: 살 붙이기 (Implementation)
+# Task — Slot 조회 및 검증
 
-**목표:** Phase 1에서 만든 뼈대(Skeleton)와 계약(DTO)을 바탕으로 실제 작동하는 코드를 작성합니다.
+> Canonical Task. 이전 Slot Task 두 문서의 확정 내용을 통합했다.
 
-### 1-0. 설계 흐름 요약 (요청 → 설계 확정)
+## 1. 목표와 제외 범위
 
-> **Flow:** OpenAPI → 프론트 사용 패턴 → 정책/권한 → 확장성 → 정합성
+대상 API는 `GET /fridge/slots`다.
 
-1. **계약 확인 (OpenAPI):** `GET /fridge/slots`의 쿼리와 응답 스키마를 확정한다.
-2. **프론트 호출 분석:** `view=full`, `page=0`, `size=200`이 기본 패턴임을 확인한다.
-3. **정책/권한 반영:** 거주자/층별장/관리자 스코프 규칙을 적용한다.
-4. **확장성 고려:** 현재 2~5층이지만 `floor`는 정수만 검증하고 존재하지 않으면 0건 반환.
-5. **호환성 결정:** `view`는 알 수 없는 값도 `full`로 fallback 처리한다.
-6. **정합성 규칙 정의:** `locked`, `slotStatus`, `occupiedCount` 등의 일관성 규칙을 체크리스트로 고정한다.
+이번 Task에서 다음을 완료한다.
 
-### 1-1. 스키마 상세화 (Schema Refinement)
+- 인증 사용자의 역할과 배정 범위에 맞는 Slot 조회
+- 선택적 층 필터와 페이지 요청 검증
+- `FridgeSlotListResponse` 계약 준수
+- Slot 운영 상태와 활성 Bundle 수의 일관된 응답
 
-> **Question:** API의 필터링(`status`), 에러 처리(`capacity`), 정렬(`createdAt`)을 위해 **Entity에 어떤 컬럼이 추가되어야 하나요?**
+다음은 구현하지 않는다.
 
-|**Entity**|**필드명**|**타입**|**필수여부**|**추가 사유 (Validation/Logic)**|
-|---|---|---|---|---|
-|`Bundle`|`status`|Enum|Y|삭제된 꾸러미를 제외하고 조회하기 위해|
-|`Slot`|`capacity`|Integer|Y|물품이 꽉 찼는지(Max) 검증하기 위해|
-|`Item`|`expiryDate`|LocalDate|N|D-Day 계산을 위한 원천 데이터|
+- Slot 생성·수정
+- 검사 잠금 생성·연장
+- Redis
+- 전체 물품·인증·검사 모델 선행 설계
+- 사용자 요청 없는 프론트 수정
 
-### 1-2. 매핑 및 로직 설계 (Strategy)
+## 2. 확정 계약
 
-> **Mapping:** DTO의 데이터를 Entity로 바꿀 때, 혹은 그 반대일 때의 규칙을 정합니다.
+### 요청
 
-- **Request 핸들링 (Query):**
-  - `floor`, `view`, `page`, `size`를 정규화한다.
-  - `view`는 `full` 이외 값도 `full`로 처리한다.
-  - `page/size`는 범위 클램프(0 이상, size 1~200) 적용.
-- **Response 핸들링 (Entity → DTO):**
-  - `Slot` → `FridgeSlotResponse`
-  - `locked`는 `slotStatus`/`lockedUntil`과 정합성 유지
-  - `displayName`은 서버에서 확정하여 반환
+| Parameter | Required | Rule |
+| --- | --- | --- |
+| `floor` | No | 1 이상의 정수. 존재하지 않는 층은 `200`과 빈 목록 |
+| `view` | No | 기본값 `full`, 허용값은 `full` |
+| `page` | No | 기본값 `0`, 최솟값 `0` |
+| `size` | No | 기본값 `20`, 범위 `1..200` |
 
-> **Business Logic:** "데이터를 저장하기 전/후에 무엇을 체크해야 하는가?"
+잘못된 `view`, 음수 `page`, 범위를 벗어난 `size`는 값을 조용히 보정하지 않고 `400 ProblemDetail`을 반환한다.
 
-1. **사전 검증:** `floor/page/size`의 형식과 범위를 정규화한다.
-2. **핵심 로직:** 역할/스코프에 맞는 슬롯만 조회한다.
-3. **후처리:** 응답 정합성(`locked`, `slotStatus`, `occupiedCount`)을 보장한다.
+### 권한과 조회 범위
 
-### 중복 필드 해석 (UI 편의 필드)
+- 거주자: 자신에게 현재 배정된 Slot. `RETIRED`를 포함해 운영 상태로 숨기지 않는다.
+- 층별장: 담당 층의 Slot
+- 관리자: 전체 Slot
+- `floor`는 각 역할의 조회 범위를 넓히지 않고 기존 범위 안에서만 필터링한다.
 
-> **Note:** 계약상 중복처럼 보이는 필드는 UI 편의용 캐시 필드입니다. 삭제/통합하지 않습니다.
+인증 전달 방식은 `AUTH-001` 결정 전이므로 구현 단계에서 임의로 확정하지 않는다.
+Service 권한 로직은 Tech Decisions 14장의 내부 인증 주체 경계를 사용해 인증 전달
+기술과 분리한다. Controller의 실제 인증 통합과 `401`, `403` 완료 판정은
+`AUTH-001` 확정 후 수행한다.
 
-- `floorNo` vs `floorCode`
-  - `floorNo`: 정렬/필터/비즈니스 로직용 숫자
-  - `floorCode`: UI 표시 문자열(예: `"2F"`)
-- `slotIndex` vs `slotLetter`
-  - `slotIndex`: 내부 정렬/식별용 인덱스
-  - `slotLetter`: 사용자 표기용 라벨(예: `"A"`)
-- `displayName`
-  - UI에서 조합하지 않도록 서버가 확정 제공하는 표기용 문자열
+### 응답
 
-### 1-2. 슬롯 조회 DTO/매핑 규칙 (요약)
+- `items`, `totalCount`, `page`, `size`, `totalPages`는 항상 반환한다.
+- 각 item은 OpenAPI의 `FridgeSlotResponse` 필수 필드를 반환한다.
+- `displayName`은 관리자가 지정한 필수 표시값이다.
+- `occupiedCount`는 소프트 삭제되지 않은 활성 Bundle 수다.
+- `occupiedCount`는 음수가 될 수 없고 `capacity`를 초과한 상태는 데이터 무결성 오류로 다룬다.
+- 검사 잠금 필드는 Phase 1 응답에 포함하지 않고 검사 수직 슬라이스에서 계약한다.
 
-- **요청 DTO (Query 모델):**
-  - `floor`: Integer, optional
-  - `view`: String, optional (default `full`)
-  - `page`: Integer, optional (default 0)
-  - `size`: Integer, optional (default 20, clamp 1~200)
-- **응답 DTO (FridgeSlotResponse):**
-  - `slotId`: UUID
-  - `slotIndex`: Integer
-  - `slotLetter`: String
-  - `floorNo`: Integer
-  - `floorCode`: String
-  - `compartmentType`: String
-  - `resourceStatus`: String
-  - `slotStatus`: String (`ACTIVE|LOCKED|IN_INSPECTION`)
-  - `locked`: Boolean
-  - `lockedUntil`: DateTime (nullable 가능)
-  - `capacity`: Integer
-  - `displayName`: String
-  - `occupiedCount`: Integer
+`size=200`은 Slot 개수가 제한적인 현재 UI 호출을 지원한다. 이 값을 다른 목록 API의 공통 정책으로 일반화하지 않는다.
 
-### 1-3. 기계적 구현 (Action Checklist)
+### 식별자와 정렬
 
-> **Execution:** 위 설계가 끝났으므로 고민 없이 순서대로 코딩합니다.
+- Slot의 영속 식별자는 `slotId`다.
+- Slot은 `fridgeId`로 소속 냉장고와 연결한다.
+- 사용자 구분에는 관리자가 지정한 `displayName`을 사용한다.
+- `slotIndex`, `position`, `displayOrder`, `slotLetter`는 사용하지 않는다.
+- 기본 정렬은 `floorNo ASC → fridgeId ASC → displayName ASC → slotId ASC`로 고정한다.
+- 마지막 `slotId` 정렬로 반복 호출과 페이지 이동에서 순서를 안정적으로 유지한다.
 
-- [ ] **Entity:** 위 1-1에서 정의한 필드(`status`, `capacity`…) 추가
-- [ ] **DTO:** `Request`/`Response` 클래스 생성 (Validation 어노테이션 포함)
-- [ ] **Repository:** 필요한 쿼리(`findAllByStatus`, `findBySlotId` 등) 인터페이스 작성
-- [ ] **Service:** 1-2의 매핑 및 비즈니스 로직 구현 (`@Transactional` 적용)
-- [ ] **Controller:** URL 매핑 및 Service 호출 연결
-    
+### 조회와 페이지 집계
 
----
+- 권한 범위를 먼저 제한한 뒤 `floor` 필터를 적용한다.
+- `floor` 파라미터는 사용자의 조회 권한을 넓히지 않는다.
+- `totalCount`는 권한 범위와 `floor` 필터를 모두 적용한 결과 수다.
+- `totalPages`는 필터 적용 후의 `totalCount`와 요청 `size`로 계산한다.
+- 조회 결과가 없어도 `items`, `totalCount`, `page`, `size`, `totalPages`를 반환한다.
 
-## 2. ✅ [Step 4] 검증 및 마감 (Closing)
+### 조회 데이터 기준
 
-**목표:** 구현 결과를 확인하고, 변경된 내용을 문서에 반영하여 '완료(Done)' 상태로 만듭니다.
+- 현재 Slot 배정은 `releasedAt IS NULL`인 `FridgeSlotAssignment`다.
+- `occupiedCount`에는 소프트 삭제되지 않은 활성 Bundle만 포함한다.
+- 동일 사용자와 Slot의 활성 배정 중복을 방지할 DB 제약은 영속성 설계 단계에서 확정한다.
+- Bundle 라벨은 `INV-013`에 따라 `(slotId, labelNumber)` 조합으로 식별한다.
+- `bundleId`, `labelNumber`, `labelDisplay`는 `INV-016`~`INV-018`의 공식 용어와 책임을 따른다.
+- 활성 라벨 중복 방지와 삭제 후 재사용 제약은 `INV-014`에 따라 Bundle 생성 Task에서 확정한다.
 
-### 2-1. 결과 검증 (Verification)
+### 조회 성능
 
-- [ ] **기본 호출:** `GET /fridge/slots` (view 없이) → `view=full` 처리되는가?
-- [ ] **View Fallback:** `view=weird` → `full`로 fallback 되는가?
-- [ ] **층 필터:** `floor=999` → 200 + 빈 리스트로 반환되는가?
-- [ ] **페이지/사이즈:** `page=-1&size=999` → page=0, size=200으로 클램프되는가?
-- [ ] **권한 범위:** 거주자/층별장/관리자 스코프가 정확히 반영되는가?
-- [ ] **응답 정합성:** `locked=true`면 `lockedUntil` 존재, `IN_INSPECTION`이면 `locked=true`인가?
-    
+- Slot마다 `occupiedCount`를 개별 조회하는 N+1 방식을 사용하지 않는다.
+- 집계 쿼리, 서브쿼리 또는 일괄 집계 중 현재 범위에서 가장 단순한 방법을 선택한다.
+- 목록 조회와 `totalCount` 쿼리에 동일한 권한·필터 조건을 적용한다.
+- 인덱스는 조회 쿼리를 확정한 뒤 조회 조건과 실행 계획을 근거로 결정한다.
 
-### 2-2. 산출물 박제 (Deliverables Update)
+## 3. 점진적 모델 범위
 
-- [ ] **API Spec:** 실제 응답값이 초기 설계와 달라졌다면 `20_Deliverables/03_API_Specification.md` 수정
-- [ ] **ERD:** 필드(컬럼)가 추가되었으므로 `20_Deliverables/02_ERD.md` 업데이트
+이번 Task에서 필요한 모델만 설계한다.
 
-### 2-3. Troubleshooting Log
-> 기술적 이슈는 `Troubleshooting/` 폴더에 별도 파일로 생성 후 여기에 링크를 거세요.
+- `User`: 조회 주체 식별에 필요한 참조
+- `Fridge`: Slot 소속과 층 조회에 필요한 최소 참조
+- `FridgeSlot`: Slot 메타데이터와 상태
+- `FridgeSlotAssignment`: 사용자와 Slot의 현재 배정
+- `FridgeBundle`: `occupiedCount` 계산에 필요한 최소 참조와 삭제 상태
+
+필드와 관계는 `02_ERD_&_Schema.md`의 현재 확정 범위를 따른다. 인증 자격증명, Room 전체 모델과 Inspection 모델은 이번 Task에서 확정하지 않는다.
+
+## 4. 구현 전 테스트 시나리오
+
+- 역할별 허용 범위만 반환
+- 거주자에게 현재 배정된 `RETIRED` Slot과 상태가 함께 반환됨
+- `floor`가 권한 범위를 넓히지 않음
+- 존재하지 않는 양수 층은 빈 페이지
+- 잘못된 `view`, `page`, `size`는 `400`
+- 빈 결과에서도 페이지 필드 반환
+- 소프트 삭제 Bundle은 `occupiedCount`에서 제외
+- 인증되지 않은 요청은 `401`
+- 권한 범위를 벗어난 데이터가 응답에 포함되지 않음
+- 같은 `displayName`이 서로 다른 냉장고에 존재해도 `slotId` 기준으로 서로 다른 Slot으로 처리
+- 정렬 결과가 반복 호출과 페이지 이동에서도 안정적임
+- `totalCount`가 권한과 `floor` 필터 적용 결과와 일치
+- Slot 수에 비례해 `occupiedCount` 조회 쿼리가 증가하지 않음
+
+지원되지 않는 역할의 `403` 처리 조건은 인증·권한 모델을 확정할 때 결정한다.
+동일 냉장고의 활성 `displayName` 중복 방지는 Slot 생성·수정과 마이그레이션
+Task에서 검증한다.
+
+## 5. 구현 순서
+
+- [ ] OpenAPI DTO를 기준으로 Request·Response 작성
+- [ ] 최소 모델과 DB 제약 검토
+- [ ] 내부 인증 주체를 입력으로 한 역할별 조회 경계 설계
+- [ ] Repository 조회와 활성 Bundle 집계 방식 결정
+- [ ] Service 권한 범위·필터·응답 조립
+- [ ] Controller와 Bean Validation
+- [ ] 단위·통합 테스트
+- [ ] API 구현 현황과 관련 문서 갱신
+
+## 6. 완료 조건
+
+- 테스트용 DB를 포함한 관련 테스트가 통과한다.
+- 요청·응답과 `ProblemDetail`이 OpenAPI와 일치한다.
+- `INV-001`과 역할별 조회 범위를 검증한다.
+- 인증 방식이 미정인 부분을 임의 구현하지 않는다.
+- Controller 인증 통합을 완료하지 못하면 API 상태를 `Implemented`로 변경하지 않는다.
+- 구현 후 필요한 경우에만 ERD의 확정 범위를 확장한다.
+
+## 7. 관련 기록
+
+- [폴더 구조는 어떻게 할까](../Troubleshooting/폴더구조는%20어떻게%20할까.md)
+- [사용자 필드 설계](../Troubleshooting/사용자%20필드%20설계(최소%20vs%20필수).md)

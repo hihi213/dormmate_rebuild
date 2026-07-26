@@ -571,7 +571,7 @@
           "fridge-controller"
         ],
         "summary": "포장 생성",
-        "description": "배정된 칸에 새로운 포장을 추가한다. 허용량(`capacity`)을 초과하면 422 `CAPACITY_EXCEEDED`가 반환된다. 데모 시나리오에서는 2층 A칸(`slotIndex` 0)만 설명용으로 허용량이 3으로 제한돼 있다.\n",
+        "description": "배정된 칸에 새로운 포장을 추가한다. 허용량(`capacity`)을 초과하면 422 `CAPACITY_EXCEEDED`가 반환된다.\n",
         "operationId": "createBundle",
         "requestBody": {
           "content": {
@@ -2182,6 +2182,8 @@
         "tags": [
           "fridge-controller"
         ],
+        "summary": "접근 가능한 냉장고 칸 조회",
+        "description": "인증 사용자의 역할과 배정 범위 안에서 냉장고 칸을 조회한다. 거주자는 현재 배정된 칸을 운영 상태와 관계없이 조회하므로 RETIRED 칸도 상태와 함께 반환될 수 있다. floor는 권한 범위 안에서만 필터링하며, 존재하지 않는 양수 층은 빈 목록을 반환한다. 결과는 floorNo, fridgeId, displayName, slotId 오름차순으로 정렬한다.",
         "operationId": "getSlots",
         "parameters": [
           {
@@ -2190,7 +2192,8 @@
             "required": false,
             "schema": {
               "type": "integer",
-              "format": "int32"
+              "format": "int32",
+              "minimum": 1
             }
           },
           {
@@ -2198,7 +2201,11 @@
             "in": "query",
             "required": false,
             "schema": {
-              "type": "string"
+              "type": "string",
+              "enum": [
+                "full"
+              ],
+              "default": "full"
             }
           },
           {
@@ -2207,7 +2214,9 @@
             "required": false,
             "schema": {
               "type": "integer",
-              "format": "int32"
+              "format": "int32",
+              "minimum": 0,
+              "default": 0
             }
           },
           {
@@ -2216,7 +2225,10 @@
             "required": false,
             "schema": {
               "type": "integer",
-              "format": "int32"
+              "format": "int32",
+              "minimum": 1,
+              "maximum": 200,
+              "default": 20
             }
           }
         ],
@@ -2224,7 +2236,7 @@
           "200": {
             "description": "OK",
             "content": {
-              "*/*": {
+              "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/FridgeSlotListResponse"
                 }
@@ -2238,15 +2250,6 @@
             "$ref": "#/components/responses/ProblemDetailResponse"
           },
           "403": {
-            "$ref": "#/components/responses/ProblemDetailResponse"
-          },
-          "404": {
-            "$ref": "#/components/responses/ProblemDetailResponse"
-          },
-          "409": {
-            "$ref": "#/components/responses/ProblemDetailResponse"
-          },
-          "422": {
             "$ref": "#/components/responses/ProblemDetailResponse"
           },
           "500": {
@@ -2943,7 +2946,8 @@
         "properties": {
           "bundleId": {
             "type": "string",
-            "format": "uuid"
+            "format": "uuid",
+            "description": "포장의 UUID 영속 식별자. 라벨 번호와 구분하며 API 및 이력 연결에 사용한다."
           },
           "slotId": {
             "type": "string",
@@ -2958,10 +2962,14 @@
           },
           "labelNumber": {
             "type": "integer",
-            "format": "int32"
+            "format": "int32",
+            "minimum": 1,
+            "maximum": 999,
+            "description": "동일 Slot 안에서 발급되는 사용자용 라벨 번호. 화면에서는 3자리로 표시한다."
           },
           "labelDisplay": {
-            "type": "string"
+            "type": "string",
+            "description": "현재 slotLabel과 3자리 labelNumber를 조합한 표시값. 영속 식별자나 유일성 기준으로 사용하지 않는다."
           },
           "bundleName": {
             "type": "string"
@@ -4027,25 +4035,36 @@
         }
       },
       "FridgeSlotResponse": {
+        "required": [
+          "slotId",
+          "fridgeId",
+          "floorNo",
+          "floorCode",
+          "compartmentType",
+          "resourceStatus",
+          "capacity",
+          "displayName",
+          "occupiedCount"
+        ],
         "type": "object",
         "properties": {
           "slotId": {
             "type": "string",
             "format": "uuid"
           },
-          "slotIndex": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "slotLetter": {
-            "type": "string"
+          "fridgeId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Slot이 소속된 물리적 냉장고의 영속 식별자"
           },
           "floorNo": {
             "type": "integer",
-            "format": "int32"
+            "format": "int32",
+            "description": "필터와 정렬에 사용하는 층 번호"
           },
           "floorCode": {
-            "type": "string"
+            "type": "string",
+            "description": "사용자에게 표시하는 층 코드"
           },
           "compartmentType": {
             "type": "string"
@@ -4053,27 +4072,14 @@
           "resourceStatus": {
             "type": "string"
           },
-          "slotStatus": {
-            "type": "string",
-            "enum": [
-              "ACTIVE",
-              "LOCKED",
-              "IN_INSPECTION"
-            ]
-          },
-          "locked": {
-            "type": "boolean"
-          },
-          "lockedUntil": {
-            "type": "string",
-            "format": "date-time"
-          },
           "capacity": {
             "type": "integer",
             "format": "int32"
           },
           "displayName": {
-            "type": "string"
+            "type": "string",
+            "minLength": 1,
+            "description": "관리자가 지정하며 사용자가 칸을 구분할 때 사용하는 필수 표시명. A칸, 1번 칸, 상단 냉장칸 등 운영 환경에 맞는 표기를 담으며 영속 식별이나 관계 키로 사용하지 않는다."
           },
           "occupiedCount": {
             "type": "integer",
@@ -4174,6 +4180,13 @@
         }
       },
       "FridgeSlotListResponse": {
+        "required": [
+          "items",
+          "totalCount",
+          "page",
+          "size",
+          "totalPages"
+        ],
         "type": "object",
         "properties": {
           "items": {
@@ -4184,7 +4197,8 @@
           },
           "totalCount": {
             "type": "integer",
-            "format": "int64"
+            "format": "int64",
+            "description": "권한 범위와 요청 필터를 모두 적용한 전체 결과 수"
           },
           "page": {
             "type": "integer",
@@ -4196,7 +4210,8 @@
           },
           "totalPages": {
             "type": "integer",
-            "format": "int32"
+            "format": "int32",
+            "description": "필터 적용 후 totalCount와 요청 size로 계산한 전체 페이지 수"
           }
         }
       },
@@ -4220,7 +4235,8 @@
         "properties": {
           "bundleId": {
             "type": "string",
-            "format": "uuid"
+            "format": "uuid",
+            "description": "포장의 UUID 영속 식별자. 라벨 번호와 구분하며 API 및 이력 연결에 사용한다."
           },
           "slotId": {
             "type": "string",
@@ -4235,10 +4251,14 @@
           },
           "labelNumber": {
             "type": "integer",
-            "format": "int32"
+            "format": "int32",
+            "minimum": 1,
+            "maximum": 999,
+            "description": "동일 Slot 안에서 발급되는 사용자용 라벨 번호. 화면에서는 3자리로 표시한다."
           },
           "labelDisplay": {
-            "type": "string"
+            "type": "string",
+            "description": "현재 slotLabel과 3자리 labelNumber를 조합한 표시값. 영속 식별자나 유일성 기준으로 사용하지 않는다."
           },
           "bundleName": {
             "type": "string"

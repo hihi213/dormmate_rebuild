@@ -1,85 +1,93 @@
-## 1. Architecture Diagram & Components
+# System Architecture
+
+> 현재 저장소에서 확인된 구성과 후속 학습 후보를 구분한다. 후보 기술을 현재 사용 중인 구성처럼 표시하지 않는다.
+
+## 1. Current Architecture
 
 ```mermaid
-graph TD
-    User["User / Browser"] -->|HTTP Request| Client["Frontend (Next.js)"]
-    Client -->|"REST API (JSON)"| Server["Backend (Spring Boot)"]
-    
-    subgraph Docker Infrastructure
-        Server -->|"JPA/JDBC"| DB[("PostgreSQL")]
-        Server -->|"Session I/O"| Redis[("Redis")]
-    end
-````
+flowchart LR
+    User[Browser] --> Frontend[Next.js 15]
+    Frontend -->|REST JSON| Backend[Spring Boot 4]
+    Backend -->|JPA / JDBC| PostgreSQL[(PostgreSQL 16)]
+```
 
-### Component Roles
+| Component | Current role | Status |
+| --- | --- | --- |
+| Next.js | 기존 UI·UX와 API Client | Existing |
+| Spring Boot | Rebuild 대상 REST API | Skeleton / In Progress |
+| Spring Data JPA | 영속성 접근 | Existing |
+| PostgreSQL | 운영·로컬 데이터 저장 | Existing |
+| Docker Compose | 로컬 실행 환경 | Existing |
 
-|**구분**|**컴포넌트**|**역할 및 기술 스택**|
-|---|---|---|
-|**Client**|**Frontend**|사용자의 입력을 받고 화면을 렌더링합니다. (Next.js - Legacy)|
-|**Server**|**Backend API**|비즈니스 로직을 수행하고 데이터를 가공합니다. (Spring Boot 4.0.1)|
-|**Data**|**PostgreSQL**|영구적인 데이터(물품, 사용자 정보)를 저장합니다.|
-|**Cache**|**Redis**|(Phase 2) 로그인 세션 및 분산 락(Distributed Lock) 처리를 담당합니다.|
+현재 인증 방식은 `AUTH-001`의 `Review Required` 상태다. 프론트는 Bearer access/refresh token을 사용하지만, Rebuild가 이를 채택한다는 의미는 아니다.
 
----
+## 2. Request Lifecycle
 
-## 2. Data Flow (Request Lifecycle)
+```text
+HTTP 요청
+→ Controller: 바인딩·입력 검증
+→ Service: 권한·소유권·상태 검증과 트랜잭션
+→ Repository: 필요한 데이터 조회·저장
+→ DTO 매핑
+→ HTTP 응답
+```
 
-사용자의 요청이 처리되는 핵심 흐름입니다.
+- Entity와 API DTO는 분리한다.
+- Repository 구현은 Spring Data JPA와 명시적 쿼리부터 검토한다.
+- 데이터 무결성은 애플리케이션 검증과 DB 제약조건을 함께 사용한다.
+- 수직 슬라이스에 필요한 모델과 쿼리만 추가한다.
 
-1. **Request:** 클라이언트(Next.js)가 REST API(`GET /fridge/bundles`)를 호출합니다.
-2. **Controller:** 요청 DTO(`BundleRequest`)를 검증(@Valid)하고 Service 계층으로 위임합니다.
-3. **Service:** 비즈니스 로직을 수행하며, 필요시 `Repository`를 호출합니다.
-    
-    - _Transaction 시작_
-        
-4. **Repository:** JPA/QueryDSL을 통해 DB에서 `Entity` 데이터를 조회합니다.
-5. **Mapping:** Service 계층에서 조회된 `Entity`를 응답 전용 `DTO`로 변환합니다. (수동 매핑)
-    
-    - _Transaction 종료 (Commit)_
-        
-6. **Response:** Controller가 `DTO`를 JSON 형태로 클라이언트에 반환합니다.
-    
+## 3. Current Development Decisions
 
----
+### Schema Management
 
-## 3. Technical Trade-off (기술적 선택의 이유)
+- 현재 개발 환경은 `spring.jpa.hibernate.ddl-auto=update`를 사용한다.
+- 초기 모델 탐색을 위한 임시 설정이며 배포용 스키마 관리 전략으로 간주하지 않는다.
+- 핵심 MVP 스키마가 안정되면 Flyway 초기 마이그레이션을 작성하고 `ddl-auto=validate`로 전환한다.
+- 테스트 DB에서도 운영과 동일한 마이그레이션을 재현하는 것을 목표로 한다.
 
-초기 개발 단계에서 **오버엔지니어링(Over-Engineering)을 방지**하고, 기술의 **도입 필요성(Pain Point)**을 명확히 하기 위해 아래와 같은 스택을 우선 선택했습니다.
+### DTO Mapping
 
-### 3-1. Spring Data JPA (vs QueryDSL)
+- MVP에서는 MapStruct 없이 명시적인 수동 매핑을 사용한다.
+- Entity와 API DTO, 계산 필드와 권한별 응답 차이를 직접 드러낸다.
+- 반복 매핑이 실제 유지보수 문제로 확인되면 자동 매핑 도구를 재검토한다.
 
-- **선택 이유:** 개발 생산성 및 복잡도 관리
-- **기술적 근거:**
-    - **빌드 복잡도 제거:** 초기 CRUD 단계에서 Annotation Processing 설정 등의 빌드 오버헤드를 제거하여 개발 속도를 확보했습니다.
-    - **문제 식별:** 추후 복잡한 동적 쿼리 발생 시, JPA의 한계를 명확히 인지하고 QueryDSL을 도입하기 위함입니다.
-        
+### Local Reproducibility
 
-### 3-2. HTTP Session (vs Redis)
+- Docker Compose로 프론트엔드, 백엔드와 PostgreSQL 실행 조건을 재현한다.
+- PostgreSQL 버전, 환경 변수와 서비스 연결을 코드로 관리한다.
+- Docker Compose 선택은 클라우드 또는 운영 배포 환경 선택과 별개의 결정이다.
 
-- **선택 이유:** 인프라 의존성 최소화 및 I/O 비용 절감
-- **기술적 근거:**
-    - **Memory Access:** 단일 서버 환경에서는 외부 네트워크(Redis) 통신보다 JVM Heap 메모리 접근이 훨씬 빠릅니다.
-    - **Complexity:** 분산 환경(Scale-out)이 아닌 단계에서 세션 클러스터링 도입은 불필요한 비용입니다.
-        
+## 4. Candidate Architecture
 
-### 3-3. Manual Mapping (vs MapStruct)
+다음 기술은 확정 구성이나 현재 의존성이 아니다.
 
-- **선택 이유:** 데이터 흐름의 명시성(Explicitness) 확보
-- **기술적 근거:**
-    - **캡슐화 제어:** `Entity` → `DTO` 변환 로직을 직접 작성함으로써, 민감한 정보(Password 등)가 외부로 노출되는 실수를 물리적으로 차단합니다.
-    - **디버깅:** 컴파일 타임에 생성되는 매퍼 코드보다, 직접 작성한 코드가 데이터 흐름을 추적(Debugging)하기 유리합니다.
-        
+| Candidate | Trigger | 먼저 검증할 방법 |
+| --- | --- | --- |
+| Redis Session | 세션 인증 확정 후 재시작·다중 서버에서 세션 공유 필요 | 단일 서버 세션 요구와 배포 구조 확인 |
+| Redis Lock | 다중 인스턴스에서 DB 락만으로 검사 동시성을 해결하기 어려움 | 유일성 제약, 조건부 갱신, 낙관적·비관적 락 |
+| QueryDSL | 검색 조건 조합이 복잡해지고 쿼리 유지보수가 어려움 | Query Method, JPQL, Specification |
+| Flyway | 핵심 스키마가 안정되고 변경 이력 재현이 필요 | 현재 스키마와 초기 마이그레이션 기준 확정 |
+| SSE | 다중 층별장 실시간 검사 합류를 구현 | 폴링 기반 MVP와 동시성 정책 검증 |
+| GitHub Actions | 로컬 검증 명령이 안정되고 반복 자동화가 필요 | 재현 가능한 테스트·lint·build 기준선 |
 
-### 3-4. ddl-auto: update (vs Flyway)
+## 5. Redis 학습 계획
 
-- **선택 이유:** 스키마 변경의 유연성(Agility) 확보
-- **기술적 근거:**
-    - **Velocity:** 초기 프로토타이핑 단계의 잦은 스키마 변경에 대응하기 위해, 마이그레이션 스크립트 작성 비용을 줄이고 JPA 자동 동기화를 활용했습니다.
-        
+Redis는 Post-MVP 비교 실험으로 남긴다.
 
-### 3-5. Docker Compose (vs AWS)
+```text
+DB 제약과 트랜잭션
+→ 낙관적·비관적 락
+→ 동시 요청 테스트와 한계 측정
+→ Redis Lock 구현
+→ 복잡도·정합성·운영 비용 비교
+```
 
-- **선택 이유:** 환경 격리(Isolation) 및 이식성(Portability)
-- **기술적 근거:**
-    - **Environment as Code:** 인프라 구성을 코드로 관리하여, 개발 장비 교체나 포맷 후에도 명령어 한 번으로 즉시 개발 환경을 복구할 수 있습니다.
-    - **Clean Localhost:** Host OS에 DB 등을 직접 설치하지 않아 시스템 오염을 방지하고, 버전 충돌 없이 깔끔한 독립 환경을 유지합니다.
+Redis Session은 Token 인증을 선택하면 프로젝트 인증 문제의 직접 해법이 아닐 수 있으므로 인증 결정 이후 별도로 판단한다.
+
+## 6. 검증되지 않은 구성
+
+- Redis, QueryDSL, Flyway는 현재 Backend 의존성에 없다.
+- 독립 테스트 DB가 없어 현재 ApplicationContext 테스트가 실패한다.
+- OpenAPI의 공통 인증 보안 계약은 아직 확정되지 않았다.
+- 프론트 lint와 build는 로컬 Node 환경 부재로 최근 검증하지 못했다.

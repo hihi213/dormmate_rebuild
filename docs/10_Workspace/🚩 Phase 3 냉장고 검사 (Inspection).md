@@ -1,87 +1,36 @@
 ---
 type: phase
-status: 🟡 Doing
-period: 01-03 19:31
-tags:
-  - project
-  - phase
----
-# 🚩 Phase 3 _ 냉장고 검사 (Inspection)
-
-> *"검사 세션의 시작-잠금-제출 흐름 구축"*
-
-* 검사 세션 시작/잠금/제출
-* 조치 기록(경고/폐기/통과)
-
-**Summary:** `이번 페이즈가 완료되었을 때, 사용자나 시스템이 얻게 되는 핵심 가치를 쓰자 (예: 외부 API와의 연동을 통해 실시간 데이터를 확보한다.)`
-- (상세기능
-## 1. 🏗️ [Step 1] 계약 및 뼈대 설계 (Contract First)
-
-**목표:** 세부 컬럼은 나중으로 미루고, **API 계약(DTO)**과 **엔티티 관계(Relationship)**를 먼저 정의합니다.
-
-### 1-1. 구현 대상 API 및 계약 (Scope)
-
-> **Action:** OpenAPI/UI를 분석하여 이번 페이즈의 구현 범위를 확정합니다.
-
-| **Method** | **URI**           | **설명**     | **핵심 Entity** |
-| ---------- | ----------------- | ---------- | ------------- |
-| `POST`     | `/fridge/bundles` | `꾸러미 생성`   | `Bundle`      |
-| `GET`      | `/fridge/slots`   | `슬롯 목록 조회` | `Slot`        |
-| …          | …                 | …          | …             |
-
-### 1-2. 도메인 관계 스케치 (ERD)
-
-> **Focus:** 필드(컬럼)는 생략하고, **URL 경로 분석**을 통해 부모-자식 관계(`||--o{`)만 선을 긋습니다.
-
-```mermaid
-erDiagram
-    %% 예시: Parent ||--o{ Child : has
-    Slot ||--o{ Bundle : contains
-    Bundle ||--o{ Item : holds
-```
-
-### 1-3. 기초 공사 (Skeleton Code)
-
-> **Check:** 실제 코딩을 시작합니다. 단, **필드 없이 `@Id`와 `연관관계`만 작성**합니다.
-
-- [ ] `domain/entity` 패키지 클래스 생성 완료
-- [ ] **Relationship:** `@ManyToOne`, `@OneToMany` 어노테이션 매핑 완료
-- [ ] **Repo:** 기본 `JpaRepository` 인터페이스 생성 완료
-    
-
+status: ⚪ Planned
+scope: MVP
 ---
 
-## 2. 🧩 [Step 2] Task 분담 (Breakdown)
+# Phase 3 — 냉장고 검사
 
-**목표:** 의존성(부모 데이터 우선)을 고려하여 2~3개의 작업 단위로 쪼갭니다.
+> 층별장이 검사 대상을 처리하고 중복 없이 제출할 수 있게 한다.
 
-| **상태** | **작업명 (Link)**        | **주요 내용**              |
-| ------ | --------------------- | ---------------------- |
-| `진행`   | `**기초 데이터 (Parent)**` | `Slot 조회 및 검증`         |
-|        | `**핵심 기능 (Core)**`    | `Bundle 생성/조회 (DTO매핑)` |
-|        | `**상세/유틸 (Detail)**`  | `Item 관리 및 수정`         |
+## MVP 범위
 
----
+- 검사 시작
+- 검사 세션과 대상 조회
+- PASS·WARNING·DISPOSE 조치 기록
+- 검사 제출
+- 중복 시작·중복 제출 방지
+- 제출 이후 일반 수정 금지
 
-## 3. ✅ [Step 4] 검증 및 마감 (Closing)
+## 선행 결정
 
-**목표:** [Step 3] 구현(Task 파일 내부에서 진행)이 완료된 후, 전체 페이즈를 마무리합니다.
+- `INSP-005`: 잠금 대상, 만료와 연장, 강제 종료 정책
+- Slot 조회에 `slotStatus`, `locked`, `lockedUntil`을 추가할 필요와 계산 원천
 
-### 3-1. 통합 테스트 (Verification)
+## Post-MVP
 
-- [ ] **Postman:** 모든 API가 계약된 JSON 포맷대로 응답하는가?
-- [ ] **DB Check:** 부모-자식 관계(FK)가 정상적으로 연결되어 저장되었는가?
+- 다중 층별장 합류와 SSE
+- 제출 결과 정정
+- 벌점 재계산
+- Redis Lock 비교 실험
 
-### 3-2. 산출물 박제 (Deliverables)
+## 완료 조건
 
-- [ ] **API Spec:** `20_Deliverables/03_API_Specification.md` 최신화 (실제 구현 반영)
-- [ ] **ERD:** `20_Deliverables/02_ERD_&_Schema.md` 업데이트 (추가된 컬럼 반영)
-- [ ] **Decision:** 면접용 주요 의사결정을 `20_Deliverables/04_Tech_Decisions.md`에 기록했는가?
-- [ ] **Log:** 트러블슈팅을 `Troubleshooting/` 폴더에 기록했는가?
-
----
-
-## 📝 4. 주요 이슈 메모 (Phase Log)
-
-- (예: 개발 중 Slot의 타입을 Enum으로 변경하기로 결정함)
-- (예: Bundle 삭제 시 Item도 같이 삭제되는 Cascade 설정 적용)
+- 담당 층 권한과 모든 대상 처리 조건을 서버가 검증한다.
+- 중복 시작과 제출에 대한 동시 요청 테스트가 통과한다.
+- DB 트랜잭션·제약·락 방식의 선택 근거가 기록된다.
