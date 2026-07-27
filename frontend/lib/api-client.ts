@@ -1,4 +1,4 @@
-import { ensureValidAccessToken, forceRefreshAccessToken, redirectToLogin } from "@/lib/auth"
+import { redirectToLogin } from "@/lib/auth"
 import {
   ApiError,
   ApiErrorDictionary,
@@ -89,32 +89,13 @@ export async function apiClient<T>(path: string, options: ApiRequestOptions = {}
   let requestBody = buildBody(body, headers)
   ensureRequestId(headers)
 
-  if (!skipAuth) {
-    const accessToken = await ensureValidAccessToken()
-    if (accessToken) {
-      headers.set("authorization", `Bearer ${accessToken}`)
-    }
-  }
-
-  let response = await fetch(requestUrl, {
+  const response = await fetch(requestUrl, {
     ...rest,
+    credentials: rest.credentials ?? "include",
     method,
     headers,
     body: requestBody,
   })
-
-  if (response.status === 401 && !skipAuth) {
-    const refreshed = await forceRefreshAccessToken()
-    if (refreshed) {
-      headers.set("authorization", `Bearer ${refreshed}`)
-      response = await fetch(requestUrl, {
-        ...rest,
-        method,
-        headers,
-        body: requestBody,
-      })
-    }
-  }
 
   if (!response.ok) {
     const error = await resolveApiError(response, errorMessages, errorCodeMessages)

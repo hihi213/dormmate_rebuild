@@ -19,12 +19,18 @@
 - 회원가입 화면은 안내 상태이며 실제 가입 요청은 비활성화돼 있다.
 - fixture 모드에서는 인증 Guard를 우회할 수 있다.
 
-이 동작은 원본 프론트의 관찰 결과다. Rebuild는 `AUTH-001`에서 서버 세션을
-선택했으며, `AUTH-002`와 `AUTH-005`의 미결 세부 정책을 자동으로 확정하지 않는다.
+이 동작은 원본 프론트의 관찰 결과다. Rebuild MVP는 `AUTH-001`에서 서버 세션만
+사용하고 토큰 인증은 `AUTH-011`의 Post-MVP 후보로 분리했다. `AUTH-002`와
+`AUTH-005`의 미결 세부 정책을 자동으로 확정하지 않는다.
+모든 API 요청에는 세션 쿠키 전달을 위해 `credentials: include`를 기본 적용했다.
+로그인 요청은 `AUTH-012`에 따라 `deviceId` 없이 자격 증명만 보내고 응답
+`UserProfileResponse`로 화면 상태를 구성한다. Bearer 헤더, Access/Refresh
+Token 저장·갱신과 `deviceId` 인증 코드는 제거했다. 로그아웃은
+`AUTH-017`에 따라 CSRF 헤더와 세션 쿠키만 전달하고 요청 본문 없이 호출한다.
 
 ### 물품
 
-- Slot은 `view=full&page=0&size=200` 형태로 호출한다.
+- Slot은 `page=0&size=200` 형태로 호출한다.
 - 현재 Slot·Bundle·검사·관리자 매핑은 `slotIndex`, `slotLetter`,
   `slotLabel`과 `toSlotLetter()` 기반 fallback을 사용한다.
 - 현재 `A001` 표시는 `slotIndex`에서 계산한 알파벳과 `labelNumber`를
@@ -50,18 +56,15 @@ mock 또는 fallback 화면은 API 구현 완료의 증거가 아니다.
 
 ## 3. 연동 시 처리할 기술 부채
 
-다음 항목은 지금 수정하지 않고 관련 API 연동 요청이 있을 때 처리한다.
+다음 항목은 확정 계약이 없거나 서로 충돌하여 관련 API 검토 후 처리한다.
 
-- generated OpenAPI schema 이름과 프론트 참조 타입 이름 불일치
 - `ErrorPayload`의 `errors` 중복 선언
 - Next 설정에서 TypeScript 또는 ESLint 오류를 무시하는 옵션
 - 관리자 mock·fallback과 실제 API 실패 상태 구분
 - Web Push 구독·해제 API 부재
-- Slot 계약 연동 시 API DTO의 `slotIndex`, `slotLetter`를 제거하고 관계와
-  선택에는 `slotId`, 소속에는 `fridgeId`, 사용자 표기에는 `displayName`을
-  사용
-- Slot 계약 연동 시 `toSlotLetter()` fallback과 `slotIndex` 기반 칸 표시를
-  제거
+- 거주자 Slot 조회 DTO와 화면 표시는 `slotId`, `fridgeId`, `displayName`으로
+  전환했다. Bundle·Inspection 화면에는 아직 각 계약 자체에 남아 있는
+  `slotIndex`, `slotLabel` 기반 표시가 존재한다.
 - Bundle·Inspection·Reallocation·Issue 연동 시 남아 있는 `slotLabel`,
   `slotIndex`, `compartmentId`, `fridgeCompartmentId`가 `slotId`와 같은
   개념인지 확인하고 확정 계약에 맞춰 타입과 매핑을 통일
@@ -69,7 +72,8 @@ mock 또는 fallback 화면은 API 구현 완료의 증거가 아니다.
   `displayName + labelNumber` 기반 표현으로 변경
 - 기존 `FLOOR_MANAGER`, `isFloorManager`, `floorManagerOnly`와 역할
   승격·해제 호출을 제거하고, `isFridgeManager`, `fridgeManagerOnly`와
-  Slot 관리 배정 흐름으로 교체
+  Slot 관리 배정 흐름으로 교체. 현재 OpenAPI에는 관리자 배정 생성·해제
+  엔드포인트가 없어 UI를 완결할 수 없다.
 - 관리자는 거주자 권한을 상속하지 않으므로 일반 물품 등록 UI를 관리자에게
   권한 상속 방식으로 노출하지 않음
 

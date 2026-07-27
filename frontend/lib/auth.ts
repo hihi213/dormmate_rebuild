@@ -1,5 +1,4 @@
 import { safeApiCall } from "@/lib/api-client"
-import { getDeviceId } from "@/lib/device-id"
 
 export type UserRole = "RESIDENT" | "FLOOR_MANAGER" | "ADMIN"
 
@@ -22,23 +21,6 @@ export type AuthUser = {
   isAdmin: boolean
 }
 
-type TokenStorage = {
-  accessToken: string
-  tokenType: string
-  accessExpiresAt: number
-  refreshToken: string
-  refreshExpiresAt: number
-}
-
-type TokenPair = {
-  accessToken: string
-  tokenType: "Bearer"
-  expiresIn: number
-  refreshToken: string
-  refreshExpiresIn: number
-  issuedAt: string
-}
-
 type RoomAssignment = {
   roomId: string
   floor: number
@@ -53,28 +35,49 @@ type UserProfile = {
   loginId: string
   displayName: string
   email?: string | null
-  roles: UserRole[]
+  accountAuthorities: string[]
   primaryRoom?: RoomAssignment | null
-  isFloorManager: boolean
+  isResident: boolean
+  isFridgeManager: boolean
   isAdmin: boolean
   createdAt: string
   updatedAt: string
 }
 
-type LoginResponse = {
-  tokens: TokenPair
-  user: UserProfile
+type LoginResponse = UserProfile
+
+type CsrfTokenResponse = {
+  headerName: string
+  parameterName: string
+  token: string
 }
 
-const TOKENS_KEY = "dm.auth.tokens"
 const PROFILE_KEY = "dm.auth.profile"
 const ADMIN_FLAG_COOKIE = "dm.admin"
 
-const ACCESS_TOKEN_SKEW_MS = 5_000
-
 const authListeners = new Set<(user: AuthUser | null) => void>()
 
-let refreshPromise: Promise<boolean> | null = null
+let csrfToken: CsrfTokenResponse | null = null
+let csrfTokenPromise: Promise<CsrfTokenResponse> | null = null
+
+export async function prepareLoginCsrfToken(): Promise<void> {
+  if (csrfToken) return
+  if (!csrfTokenPromise) {
+    csrfTokenPromise = safeApiCall<CsrfTokenResponse>("/csrf", {
+      method: "GET",
+      skipAuth: true,
+    }).then(({ data, error }) => {
+      if (error || !data) {
+        throw new Error(error?.message ?? "로그인 보안 정보를 준비하지 못했습니다.")
+      }
+      csrfToken = data
+      return data
+    }).finally(() => {
+      csrfTokenPromise = null
+    })
+  }
+  await csrfTokenPromise
+}
 
 function mapUserProfile(profile: UserProfile): AuthUser {
   const roomDetails = profile.primaryRoom
@@ -92,8 +95,12 @@ function mapUserProfile(profile: UserProfile): AuthUser {
     name: profile.displayName,
     room: formatRoom(profile.primaryRoom ?? undefined),
     roomDetails,
-    roles: profile.roles ?? [],
-    isFloorManager: profile.isFloorManager,
+    roles: [
+      ...(profile.isResident ? (["RESIDENT"] as UserRole[]) : []),
+      ...(profile.isFridgeManager ? (["FLOOR_MANAGER"] as UserRole[]) : []),
+      ...(profile.isAdmin ? (["ADMIN"] as UserRole[]) : []),
+    ],
+    isFloorManager: profile.isFridgeManager,
     isAdmin: profile.isAdmin,
   }
 }
@@ -103,37 +110,6 @@ function formatRoom(room?: RoomAssignment | null): string | undefined {
   const base = room.roomNumber ? `${room.roomNumber}호` : ""
   const personal = room.personalNo ? ` ${room.personalNo}번` : ""
   return `${room.floor}층 ${base}${personal}`.trim()
-}
-
-function toTokenStorage(pair: TokenPair): TokenStorage {
-  const issuedAt = Date.parse(pair.issuedAt)
-  return {
-    accessToken: pair.accessToken,
-    tokenType: pair.tokenType,
-    accessExpiresAt: issuedAt + pair.expiresIn * 1000,
-    refreshToken: pair.refreshToken,
-    refreshExpiresAt: issuedAt + pair.refreshExpiresIn * 1000,
-  }
-}
-
-function readTokens(): TokenStorage | null {
-  if (typeof window === "undefined") return null
-  try {
-    const raw = localStorage.getItem(TOKENS_KEY)
-    if (!raw) return null
-    return JSON.parse(raw) as TokenStorage
-  } catch {
-    return null
-  }
-}
-
-function writeTokens(tokens: TokenStorage | null) {
-  if (typeof window === "undefined") return
-  if (!tokens) {
-    localStorage.removeItem(TOKENS_KEY)
-    return
-  }
-  localStorage.setItem(TOKENS_KEY, JSON.stringify(tokens))
 }
 
 function readUser(): AuthUser | null {
@@ -183,72 +159,14 @@ function notifyAuth(user: AuthUser | null) {
 }
 
 function applySession(response: LoginResponse) {
-  const tokenStorage = toTokenStorage(response.tokens)
-  const user = mapUserProfile(response.user)
-  writeTokens(tokenStorage)
+  const user = mapUserProfile(response)
   writeUser(user)
   notifyAuth(user)
 }
 
 function clearSession() {
-  writeTokens(null)
   writeUser(null)
   notifyAuth(null)
-}
-
-function isAccessTokenExpired(tokens: TokenStorage): boolean {
-  return Date.now() + ACCESS_TOKEN_SKEW_MS >= tokens.accessExpiresAt
-}
-
-function isRefreshTokenExpired(tokens: TokenStorage): boolean {
-  return Date.now() >= tokens.refreshExpiresAt
-}
-
-async function ensureTokens(forceRefresh: boolean): Promise<boolean> {
-  const tokens = readTokens()
-  if (!tokens) return false
-
-  if (isRefreshTokenExpired(tokens)) {
-    clearSession()
-    return false
-  }
-
-  if (!forceRefresh && !isAccessTokenExpired(tokens)) {
-    return true
-  }
-
-  if (refreshPromise) {
-    return refreshPromise
-  }
-
-  refreshPromise = (async () => {
-    const current = readTokens()
-    if (!current) return false
-    if (isRefreshTokenExpired(current)) {
-      clearSession()
-      return false
-    }
-
-    const { data, error } = await safeApiCall<LoginResponse>("/auth/refresh", {
-      method: "POST",
-      body: { refreshToken: current.refreshToken, deviceId: getDeviceId() },
-      skipAuth: true,
-    })
-
-    if (error || !data) {
-      clearSession()
-      return false
-    }
-
-    applySession(data)
-    return true
-  })()
-
-  try {
-    return await refreshPromise
-  } finally {
-    refreshPromise = null
-  }
 }
 
 export function subscribeAuth(listener: (user: AuthUser | null) => void) {
@@ -270,45 +188,56 @@ export function getCurrentUserLoginId(): string | null {
   return readUser()?.loginId ?? null
 }
 
-export async function ensureValidAccessToken(): Promise<string | null> {
-  const tokens = readTokens()
-  if (!tokens) return null
-  const success = await ensureTokens(false)
-  if (!success) return null
-  return readTokens()?.accessToken ?? null
-}
-
-export async function forceRefreshAccessToken(): Promise<string | null> {
-  const success = await ensureTokens(true)
-  if (!success) return null
-  return readTokens()?.accessToken ?? null
-}
-
 export async function loginWithCredentials({ id, password }: { id: string; password: string }) {
+  if (!csrfToken) {
+    throw new Error("로그인 보안 정보가 준비되지 않았습니다. 잠시 후 다시 시도해 주세요.")
+  }
+  const loginCsrfToken = csrfToken
   const { data, error } = await safeApiCall<LoginResponse>("/auth/login", {
     method: "POST",
-    body: { loginId: id, password, deviceId: getDeviceId() },
+    body: { loginId: id, password },
+    headers: {
+      [loginCsrfToken.headerName]: loginCsrfToken.token,
+    },
     skipAuth: true,
   })
 
   if (error || !data) {
-    throw new Error(error?.message ?? "로그인에 실패했습니다. 다시 시도해 주세요.")
+    if (error?.code === "CSRF_INVALID") {
+      csrfToken = null
+    }
+    const loginError = new Error(
+      error?.message ?? "로그인에 실패했습니다. 다시 시도해 주세요.",
+    ) as Error & { code?: string }
+    loginError.code = error?.code
+    throw loginError
   }
 
   applySession(data)
+  csrfToken = null
   return getCurrentUser()
 }
 
 export async function logout() {
-  const tokens = readTokens()
-  if (tokens) {
-    await safeApiCall("/auth/logout", {
-      method: "POST",
-      body: { refreshToken: tokens.refreshToken },
-      skipAuth: true,
-      parseResponseAs: "none",
-    })
+  await prepareLoginCsrfToken()
+  if (!csrfToken) {
+    throw new Error("로그아웃 보안 정보를 준비하지 못했습니다.")
   }
+  const logoutCsrfToken = csrfToken
+  const { error } = await safeApiCall("/auth/logout", {
+    method: "POST",
+    headers: {
+      [logoutCsrfToken.headerName]: logoutCsrfToken.token,
+    },
+    parseResponseAs: "none",
+  })
+  if (error?.code === "CSRF_INVALID") {
+    csrfToken = null
+  }
+  if (error) {
+    throw new Error(error.message)
+  }
+  csrfToken = null
   clearSession()
 }
 
@@ -328,12 +257,6 @@ export async function fetchProfile(): Promise<AuthUser | null> {
   writeUser(user)
   notifyAuth(user)
   return user
-}
-
-export function getAuthorizationHeader(): string | null {
-  const tokens = readTokens()
-  if (!tokens) return null
-  return `${tokens.tokenType} ${tokens.accessToken}`
 }
 
 type RedirectToLoginOptions = {

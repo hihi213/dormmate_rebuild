@@ -104,13 +104,17 @@ export const defaultCodeDictionary: Record<string, ApiErrorTemplate> = {
     code: "FLOOR_SCOPE_VIOLATION",
     message: "담당 층이 아닌 냉장고 칸에 접근할 수 없습니다.",
   },
-  INVALID_CREDENTIALS: {
-    code: "INVALID_CREDENTIALS",
+  AUTH_INVALID_CREDENTIALS: {
+    code: "AUTH_INVALID_CREDENTIALS",
     message: "아이디 또는 비밀번호가 올바르지 않습니다.",
   },
-  USER_INACTIVE: {
-    code: "USER_INACTIVE",
+  ACCOUNT_INACTIVE: {
+    code: "ACCOUNT_INACTIVE",
     message: "비활성화된 계정입니다. 관리자에게 문의해 주세요.",
+  },
+  CSRF_INVALID: {
+    code: "CSRF_INVALID",
+    message: "보안 토큰이 유효하지 않습니다. 페이지를 새로고침한 뒤 다시 시도해 주세요.",
   },
   INVALID_ACCESS_TOKEN: {
     code: "INVALID_ACCESS_TOKEN",

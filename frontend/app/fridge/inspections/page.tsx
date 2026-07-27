@@ -424,13 +424,7 @@ function InspectionsInner() {
       return
     }
     const targetSchedule =
-      groupToStart.schedules.find((schedule) => schedule.fridgeCompartmentId === slot.slotId) ??
-      groupToStart.schedules.find(
-        (schedule) =>
-          typeof schedule.slotIndex === "number" && typeof slot.slotIndex === "number"
-            ? schedule.slotIndex === slot.slotIndex
-            : false,
-      )
+      groupToStart.schedules.find((schedule) => schedule.fridgeCompartmentId === slot.slotId)
     if (!targetSchedule) {
       toast({
         title: "검사를 시작할 수 없습니다.",
@@ -1441,25 +1435,14 @@ function groupSchedules(list: InspectionSchedule[]): ScheduleGroup[] {
 function getGroupSlots(group: ScheduleGroup, slots: Slot[]): Slot[] {
   const unique = new Map<string, Slot>()
   group.schedules.forEach((schedule) => {
-    let slot =
-      slots.find((candidate) => candidate.slotId === schedule.fridgeCompartmentId) ??
-      slots.find(
-        (candidate) =>
-          typeof schedule.slotIndex === "number" &&
-          candidate.slotIndex === schedule.slotIndex &&
-          (typeof schedule.floorNo === "number" ? candidate.floorNo === schedule.floorNo : true),
-      ) ??
-      slots.find(
-        (candidate) =>
-          !!schedule.slotLetter &&
-          candidate.slotLetter === schedule.slotLetter &&
-          (typeof schedule.floorNo === "number" ? candidate.floorNo === schedule.floorNo : true),
-      )
+    const slot = slots.find((candidate) => candidate.slotId === schedule.fridgeCompartmentId)
     if (slot) {
       unique.set(slot.slotId, slot)
     }
   })
-  return Array.from(unique.values()).sort((a, b) => a.slotIndex - b.slotIndex)
+  return Array.from(unique.values()).sort(
+    (a, b) => a.floorNo - b.floorNo || a.displayName.localeCompare(b.displayName, "ko"),
+  )
 }
 
 function formatGroupSlotSummary(slots: Slot[]): string {
@@ -1472,7 +1455,6 @@ function formatGroupSlotSummary(slots: Slot[]): string {
 }
 
 function isSlotSelectableForStart(slot: Slot, activeSession: InspectionSession | null): boolean {
-  if (slot.locked) return false
   if (slot.resourceStatus !== "ACTIVE") return false
   if (activeSession && activeSession.slotId === slot.slotId) return false
   return true

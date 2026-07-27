@@ -14,11 +14,9 @@ export const formatSlotName = (slotLetter: string, type?: CompartmentType): stri
 export const formatCompartmentLabel = (slotIndex: number, type?: CompartmentType): string =>
   formatSlotName(toSlotLetter(slotIndex), type)
 
-export const formatSlotDisplayName = (slot: Pick<Slot, "slotIndex" | "slotLetter" | "compartmentType">): string => {
-  const letter =
-    slot.slotLetter && slot.slotLetter.length > 0 ? slot.slotLetter : toSlotLetter(slot.slotIndex)
-  return formatSlotName(letter, slot.compartmentType)
-}
+export const formatSlotDisplayName = (
+  slot: Pick<Slot, "displayName" | "compartmentType">,
+): string => slot.displayName
 
 export const formatStickerLabel = (slotIndex: number, labelNumber: number): string =>
   formatBundleLabel(slotIndex, labelNumber)

@@ -692,7 +692,7 @@ export function FridgeProvider({ children }: { children: React.ReactNode }) {
     (slotId: string) => {
       const slot = slots.find((candidate) => candidate.slotId === slotId)
       if (!slot) return false
-      return slot.resourceStatus === "ACTIVE" && !slot.locked
+      return slot.resourceStatus === "ACTIVE"
     },
     [slots],
   )

@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect } from "react"
-import { ensureValidAccessToken } from "@/lib/auth"
+import { fetchProfile } from "@/lib/auth"
 
 const HEARTBEAT_INTERVAL_MS = 30_000
 
@@ -11,7 +11,7 @@ export default function SessionHeartbeat() {
     let cancelled = false
 
     const tick = async () => {
-      await ensureValidAccessToken()
+      await fetchProfile()
       if (cancelled) return
       timer = setTimeout(tick, HEARTBEAT_INTERVAL_MS)
     }

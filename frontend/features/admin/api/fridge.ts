@@ -2,12 +2,12 @@ import { safeApiCall } from "@/lib/api-client"
 import type { components } from "@/lib/api-types"
 import type { ApiError } from "@/lib/api-errors"
 
-type FridgeSlotDto = components["schemas"]["FridgeSlot"]
-type BundleSummaryDto = components["schemas"]["FridgeBundleSummary"]
+type FridgeSlotDto = components["schemas"]["FridgeSlotResponse"]
+type BundleSummaryDto = components["schemas"]["FridgeBundleSummaryResponse"]
 type BundleListResponseDto = components["schemas"]["BundleListResponse"]
-type InspectionSessionDto = components["schemas"]["InspectionSession"]
+type InspectionSessionDto = components["schemas"]["InspectionSessionResponse"]
 type UpdateInspectionSessionRequestDto = components["schemas"]["UpdateInspectionSessionRequest"]
-type InspectionScheduleDto = components["schemas"]["InspectionSchedule"]
+type InspectionScheduleDto = components["schemas"]["InspectionScheduleResponse"]
 type ReallocationPreviewResponseDto = components["schemas"]["ReallocationPreviewResponse"]
 type ReallocationApplyRequestDto = components["schemas"]["ReallocationApplyRequest"]
 type ReallocationApplyResponseDto = components["schemas"]["ReallocationApplyResponse"]

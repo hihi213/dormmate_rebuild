@@ -11,17 +11,14 @@ export type UpdateCompartmentConfigPayload = {
 
 export type Slot = {
   slotId: string
-  slotIndex: number
-  slotLetter: string
+  fridgeId: string
   floorNo: number
   floorCode: FloorCode
   compartmentType: CompartmentType
   resourceStatus: ResourceStatus
-  locked: boolean
-  lockedUntil?: string | null
-  capacity?: number | null
-  displayName?: string | null
-  occupiedCount?: number | null
+  capacity: number
+  displayName: string
+  occupiedCount: number
 }
 
 export type Owner = "me" | "other"

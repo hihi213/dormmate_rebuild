@@ -11,6 +11,8 @@ scope: MVP
 ## 확정
 
 - Java 21 (`.mise.toml`, Gradle Toolchain)
+- Node.js 22 (`.mise.toml`, `frontend/package.json` engines)
+- npm 10과 `npm ci` 기반 프론트 의존성 재현
 - Spring Boot 4.0.1
 - Gradle Wrapper 9.2.1
 - PostgreSQL 16
@@ -26,6 +28,8 @@ scope: MVP
 | Done | Validation 테스트를 DB 없는 Web MVC 슬라이스로 분리 |
 | Done | PostgreSQL Testcontainers 공통 구성 추가 |
 | Done | OrbStack 환경에서 전체 `./gradlew test` 통과 |
+| Done | mise Node.js 22 환경에서 `npm ci`, 프론트 lint와 build 실행 |
+| Known issue | 별도 `tsc --noEmit`은 기존 프론트 타입 오류로 실패하며 Next build는 설정상 타입 검사와 lint를 생략 |
 
 ## 완료 조건
 
@@ -33,6 +37,7 @@ scope: MVP
 - ApplicationContext가 PostgreSQL Testcontainer에 연결된다.
 - DB가 필요 없는 Web 테스트는 컨테이너 없이 실행된다.
 - 테스트 실행 조건이 README 또는 실행 문서에 기록된다.
+- 프론트 명령은 `.mise.toml`의 Node.js 22와 잠금 파일 기반 `npm ci`로 재현된다.
 
 ## 다음 Phase 선행 조건
 

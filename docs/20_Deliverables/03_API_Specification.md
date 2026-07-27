@@ -689,6 +689,8 @@
     },
     "/auth/refresh": {
       "post": {
+        "x-scope": "Post-MVP",
+        "description": "Post-MVP 토큰 인증 후보 계약. MVP 세션 인증에서는 호출하거나 구현하지 않는다.",
         "tags": [
           "auth-controller"
         ],
@@ -744,37 +746,13 @@
           "auth-controller"
         ],
         "operationId": "logout",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/LogoutRequest"
-              }
-            }
-          },
-          "required": true
-        },
+        "description": "현재 서버 세션을 무효화하고 세션 쿠키를 만료시킨다. 이미 세션이 없거나 만료된 경우에도 성공으로 처리한다.",
         "responses": {
-          "200": {
-            "description": "OK"
-          },
-          "400": {
-            "$ref": "#/components/responses/ProblemDetailResponse"
-          },
-          "401": {
-            "$ref": "#/components/responses/ProblemDetailResponse"
+          "204": {
+            "description": "로그아웃 완료. 응답 본문은 없다."
           },
           "403": {
-            "$ref": "#/components/responses/ProblemDetailResponse"
-          },
-          "404": {
-            "$ref": "#/components/responses/ProblemDetailResponse"
-          },
-          "409": {
-            "$ref": "#/components/responses/ProblemDetailResponse"
-          },
-          "422": {
-            "$ref": "#/components/responses/ProblemDetailResponse"
+            "$ref": "#/components/responses/CsrfInvalidResponse"
           },
           "500": {
             "$ref": "#/components/responses/ProblemDetailResponse"
@@ -788,6 +766,7 @@
           "auth-controller"
         ],
         "operationId": "login",
+        "description": "자격 증명을 검증하고 서버 세션을 생성한다. 성공 시 세션 쿠키와 현재 사용자 프로필을 한 번의 응답으로 반환한다.",
         "requestBody": {
           "content": {
             "application/json": {
@@ -800,11 +779,11 @@
         },
         "responses": {
           "200": {
-            "description": "OK",
+            "description": "로그인 성공. 응답의 Set-Cookie로 HttpOnly 세션 쿠키를 발급한다.",
             "content": {
-              "*/*": {
+              "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/LoginResponse"
+                  "$ref": "#/components/schemas/UserProfileResponse"
                 }
               }
             }
@@ -813,10 +792,10 @@
             "$ref": "#/components/responses/ProblemDetailResponse"
           },
           "401": {
-            "$ref": "#/components/responses/ProblemDetailResponse"
+            "$ref": "#/components/responses/InvalidCredentialsResponse"
           },
           "403": {
-            "$ref": "#/components/responses/ProblemDetailResponse"
+            "$ref": "#/components/responses/LoginForbiddenResponse"
           },
           "404": {
             "$ref": "#/components/responses/ProblemDetailResponse"
@@ -2100,7 +2079,7 @@
           "fridge-controller"
         ],
         "summary": "접근 가능한 냉장고 칸 조회",
-        "description": "인증 사용자의 역할과 배정 범위 안에서 냉장고 칸을 조회한다. 거주자는 현재 배정된 칸을 운영 상태와 관계없이 조회하므로 RETIRED 칸도 상태와 함께 반환될 수 있다. floor는 권한 범위 안에서만 필터링하며, 존재하지 않는 양수 층은 빈 목록을 반환한다. 결과는 floorNo, fridgeId, displayName, slotId 오름차순으로 정렬한다.",
+        "description": "인증된 일반 거주자의 현재 거주 호실에 활성 배정된 냉장고 칸을 조회한다. 배정된 칸은 운영 상태와 관계없이 조회하므로 RETIRED 칸도 상태와 함께 반환될 수 있다. 결과는 floorNo, fridgeId, displayName, slotId 오름차순으로 정렬한다.",
         "operationId": "getSlots",
         "security": [
           {
@@ -2108,28 +2087,6 @@
           }
         ],
         "parameters": [
-          {
-            "name": "floor",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "type": "integer",
-              "format": "int32",
-              "minimum": 1
-            }
-          },
-          {
-            "name": "view",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "type": "string",
-              "enum": [
-                "full"
-              ],
-              "default": "full"
-            }
-          },
           {
             "name": "page",
             "in": "query",
@@ -3582,7 +3539,6 @@
       },
       "LoginRequest": {
         "required": [
-          "deviceId",
           "loginId",
           "password"
         ],
@@ -3592,9 +3548,6 @@
             "type": "string"
           },
           "password": {
-            "type": "string"
-          },
-          "deviceId": {
             "type": "string"
           }
         }
@@ -4546,6 +4499,68 @@
       }
     },
     "responses": {
+      "CsrfInvalidResponse": {
+        "description": "CSRF 토큰이 누락·불일치·만료되어 요청 검증에 실패함. 세부 원인은 외부에서 구분하지 않는다.",
+        "content": {
+          "application/problem+json": {
+            "schema": {
+              "$ref": "#/components/schemas/ProblemDetail"
+            },
+            "example": {
+              "title": "요청 검증 실패",
+              "status": 403,
+              "detail": "보안 토큰이 유효하지 않습니다. 페이지를 새로고침한 뒤 다시 시도해 주세요.",
+              "code": "CSRF_INVALID"
+            }
+          }
+        }
+      },
+      "LoginForbiddenResponse": {
+        "description": "로그인이 금지된 이유를 안정적인 오류 코드로 구분한다. ACCOUNT_INACTIVE는 올바른 자격 증명의 비활성 계정, CSRF_INVALID는 CSRF 토큰 누락·불일치·만료에 사용한다.",
+        "content": {
+          "application/problem+json": {
+            "schema": {
+              "$ref": "#/components/schemas/ProblemDetail"
+            },
+            "examples": {
+              "accountInactive": {
+                "summary": "비활성 계정",
+                "value": {
+                  "title": "계정 사용 불가",
+                  "status": 403,
+                  "detail": "비활성화된 계정입니다. 관리자에게 문의해 주세요.",
+                  "code": "ACCOUNT_INACTIVE"
+                }
+              },
+              "csrfInvalid": {
+                "summary": "CSRF 검증 실패",
+                "value": {
+                  "title": "요청 검증 실패",
+                  "status": 403,
+                  "detail": "보안 토큰이 유효하지 않습니다. 페이지를 새로고침한 뒤 다시 시도해 주세요.",
+                  "code": "CSRF_INVALID"
+                }
+              }
+            }
+          }
+        }
+      },
+      "InvalidCredentialsResponse": {
+        "description": "아이디가 존재하지 않거나 비밀번호가 일치하지 않음. 두 원인을 외부 응답에서 구분하지 않는다.",
+        "content": {
+          "application/problem+json": {
+            "schema": {
+              "$ref": "#/components/schemas/ProblemDetail"
+            },
+            "example": {
+              "title": "인증 실패",
+              "status": 401,
+              "detail": "아이디 또는 비밀번호가 올바르지 않습니다.",
+              "code": "AUTH_INVALID_CREDENTIALS"
+            }
+          }
+        }
+      },
       "ProblemDetailResponse": {
         "description": "Error response in ProblemDetail format",
         "content": {

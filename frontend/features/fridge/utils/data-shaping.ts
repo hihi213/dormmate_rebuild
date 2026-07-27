@@ -42,17 +42,14 @@ export const formatBundleLabel = (slotIndex: number, labelNumber: number): strin
 
 export type FridgeSlotDto = {
   slotId: string
-  slotIndex: number
-  slotLetter?: string | null
+  fridgeId: string
   floorNo: number
   floorCode: string
-  compartmentType: CompartmentType
-  resourceStatus: ResourceStatus
-  locked: boolean
-  lockedUntil?: string | null
-  capacity?: number | null
-  displayName?: string | null
-  occupiedCount?: number | null
+  compartmentType: string
+  resourceStatus: string
+  capacity: number
+  displayName: string
+  occupiedCount: number
 }
 
 export type FridgeBundleSummaryDto = {
@@ -111,20 +108,16 @@ export type FridgeSlotListResponseDto = {
 }
 
 export function mapSlotFromDto(dto: FridgeSlotDto): Slot {
-  const slotLetter = dto.slotLetter && dto.slotLetter.length > 0 ? dto.slotLetter : toSlotLetter(dto.slotIndex)
   return {
     slotId: dto.slotId,
-    slotIndex: dto.slotIndex,
-    slotLetter,
+    fridgeId: dto.fridgeId,
     floorNo: dto.floorNo,
     floorCode: dto.floorCode as FloorCode,
-    compartmentType: dto.compartmentType,
-    resourceStatus: dto.resourceStatus,
-    locked: dto.locked,
-    lockedUntil: dto.lockedUntil ?? null,
-    capacity: dto.capacity ?? null,
-    displayName: dto.displayName ?? null,
-    occupiedCount: dto.occupiedCount ?? null,
+    compartmentType: dto.compartmentType as CompartmentType,
+    resourceStatus: dto.resourceStatus as ResourceStatus,
+    capacity: dto.capacity,
+    displayName: dto.displayName,
+    occupiedCount: dto.occupiedCount,
   }
 }
 

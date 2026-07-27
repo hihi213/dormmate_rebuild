@@ -9,7 +9,7 @@
 ![Java](https://img.shields.io/badge/Java-21-007396?style=flat-square&logo=openjdk&logoColor=white)
 ![Spring Boot](https://img.shields.io/badge/Spring%20Boot-4.0.1-6DB33F?style=flat-square&logo=springboot&logoColor=white)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-4169E1?style=flat-square&logo=postgresql&logoColor=white)
-![Next.js](https://img.shields.io/badge/Next.js-15.1.9-000000?style=flat-square&logo=nextdotjs&logoColor=white)
+![Next.js](https://img.shields.io/badge/Next.js-15.5.22-000000?style=flat-square&logo=nextdotjs&logoColor=white)
 ![Status](https://img.shields.io/badge/Status-Backend%20Rebuilding-orange?style=flat-square)
 
 </div>
@@ -173,7 +173,7 @@ OpenAPI는 목표 API의 초기 계약으로 사용하되, 불완전한 항목�
 
 ### Frontend
 
-- Next.js 15.1.9
+- Next.js 15.5.22
 - React 18
 - TypeScript
 - 기존 UI와 UX 유지
@@ -286,14 +286,15 @@ Testcontainers를 사용합니다. 테스트 실행 전에 OrbStack이 실행 �
 
 ```bash
 cd frontend
-npm install
-npm run dev
+mise exec -- npm ci
+mise exec -- npm run dev
 ```
 
 ```bash
 cd frontend
-npm run lint
-npm run build
+mise exec -- ./node_modules/.bin/tsc --noEmit
+mise exec -- npm run lint
+mise exec -- npm run build
 ```
 
 ## 주요 문서

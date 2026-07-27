@@ -153,23 +153,6 @@ function FridgeInner() {
       if (schedule.fridgeCompartmentId && permittedIdsLocal.includes(schedule.fridgeCompartmentId)) {
         return true
       }
-      const byIndex =
-        typeof schedule.slotIndex === "number"
-          ? slots.find(
-              (slot) =>
-                slot.slotIndex === schedule.slotIndex &&
-                (typeof schedule.floorNo === "number" ? slot.floorNo === schedule.floorNo : true),
-            )
-          : null
-      if (byIndex) return true
-      if (schedule.slotLetter) {
-        const byLetter = slots.find(
-          (slot) =>
-            slot.slotLetter === schedule.slotLetter &&
-            (typeof schedule.floorNo === "number" ? slot.floorNo === schedule.floorNo : true),
-        )
-        if (byLetter) return true
-      }
       return false
     }
 
@@ -294,7 +277,7 @@ function FridgeInner() {
   const selectedSlot = useMemo(() => slots.find((slot) => slot.slotId === selectedSlotId) ?? null, [slots, selectedSlotId])
   const selectedSlotSuspended = useMemo(() => {
     if (!selectedSlot) return false
-    return selectedSlot.resourceStatus !== "ACTIVE" || Boolean(selectedSlot.locked)
+    return selectedSlot.resourceStatus !== "ACTIVE"
   }, [selectedSlot])
 
   // Stable handlers
@@ -330,7 +313,7 @@ function FridgeInner() {
       return
     }
     const suspended = selectedSlot
-      ? selectedSlot.resourceStatus !== "ACTIVE" || Boolean(selectedSlot.locked)
+      ? selectedSlot.resourceStatus !== "ACTIVE"
       : false
     if (suspended) {
       toast({

@@ -26,10 +26,10 @@ export function mapNotificationListFromDto(dto: NotificationListResponseDto): No
   const items = (dto.items ?? []).map(mapNotificationFromDto)
   return {
     items,
-    page: dto.page,
-    size: dto.size,
-    totalElements: dto.totalElements,
-    unreadCount: dto.unreadCount,
+    page: dto.page ?? 0,
+    size: dto.size ?? items.length,
+    totalElements: dto.totalElements ?? items.length,
+    unreadCount: dto.unreadCount ?? 0,
   }
 }
 

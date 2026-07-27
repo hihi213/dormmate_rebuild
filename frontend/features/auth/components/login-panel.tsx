@@ -7,7 +7,12 @@ import { useRouter, useSearchParams } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { useToast } from "@/hooks/use-toast"
-import { ensureValidAccessToken, getCurrentUser, loginWithCredentials } from "@/lib/auth"
+import {
+  fetchProfile,
+  getCurrentUser,
+  loginWithCredentials,
+  prepareLoginCsrfToken,
+} from "@/lib/auth"
 import type { AuthUser } from "@/lib/auth"
 
 type LoginPanelProps = {
@@ -30,6 +35,7 @@ export function LoginPanel({ redirectTo }: LoginPanelProps) {
   const [password, setPassword] = useState("")
   const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState("")
+  const [csrfReady, setCsrfReady] = useState(false)
   const [pending, startTransition] = useTransition()
   const errorRegionRef = useRef<HTMLParagraphElement | null>(null)
 
@@ -53,11 +59,11 @@ export function LoginPanel({ redirectTo }: LoginPanelProps) {
     const maybeRedirect = async () => {
       const current = getCurrentUser()
       if (!current) return
-      const accessToken = await ensureValidAccessToken()
-      if (!accessToken || cancelled) {
+      const profile = await fetchProfile()
+      if (!profile || cancelled) {
         return
       }
-      router.replace(resolveTarget(getCurrentUser()))
+      router.replace(resolveTarget(profile))
     }
     void maybeRedirect()
     return () => {
@@ -67,6 +73,26 @@ export function LoginPanel({ redirectTo }: LoginPanelProps) {
 
   useEffect(() => {
     idInputRef.current?.focus()
+  }, [])
+
+  useEffect(() => {
+    let cancelled = false
+    void prepareLoginCsrfToken()
+      .then(() => {
+        if (!cancelled) setCsrfReady(true)
+      })
+      .catch((csrfError) => {
+        if (!cancelled) {
+          setError(
+            csrfError instanceof Error
+              ? csrfError.message
+              : "로그인 보안 정보를 준비하지 못했습니다.",
+          )
+        }
+      })
+    return () => {
+      cancelled = true
+    }
   }, [])
 
   useEffect(() => {
@@ -94,6 +120,19 @@ export function LoginPanel({ redirectTo }: LoginPanelProps) {
         })
         router.replace(resolveTarget(current ?? null))
       } catch (err) {
+        if (
+          typeof err === "object" &&
+          err !== null &&
+          "code" in err &&
+          err.code === "CSRF_INVALID"
+        ) {
+          setCsrfReady(false)
+          void prepareLoginCsrfToken()
+            .then(() => setCsrfReady(true))
+            .catch(() => {
+              setCsrfReady(false)
+            })
+        }
         setError(err instanceof Error ? err.message : "로그인에 실패했습니다. 다시 시도해 주세요.")
       }
     })
@@ -173,8 +212,7 @@ export function LoginPanel({ redirectTo }: LoginPanelProps) {
       <Button
         type="submit"
         className="w-full h-11 rounded-xl bg-emerald-600 font-semibold shadow-lg shadow-emerald-600/20 transition hover:bg-emerald-700"
-        onClick={handleSubmit}
-        disabled={pending}
+        disabled={pending || !csrfReady}
       >
         {pending && <Loader2 className="mr-2 size-4 animate-spin" />}
         {"로그인"}

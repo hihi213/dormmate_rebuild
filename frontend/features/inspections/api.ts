@@ -280,7 +280,7 @@ export async function fetchInspectionSlots(): Promise<Slot[]> {
   }
 
   const { data, error } = await safeApiCall<FridgeSlotListResponseDto>(
-    "/fridge/slots?view=full&page=0&size=200",
+    "/fridge/slots?page=0&size=200",
     { method: "GET" },
   )
   if (error || !data) {

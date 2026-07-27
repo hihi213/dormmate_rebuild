@@ -95,7 +95,7 @@ export interface paths {
         put?: never;
         /**
          * 포장 생성
-         * @description 배정된 칸에 새로운 포장을 추가한다. 허용량(`capacity`)을 초과하면 422 `CAPACITY_EXCEEDED`가 반환된다. 데모 시나리오에서는 2층 A칸(`slotIndex` 0)만 설명용으로 허용량이 3으로 제한돼 있다.
+         * @description 배정된 칸에 새로운 포장을 추가한다. 허용량(`capacity`)을 초과하면 422 `CAPACITY_EXCEEDED`가 반환된다.
          */
         post: operations["createBundle"];
         delete?: never;
@@ -145,6 +145,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
+        /** @description 현재 서버 세션을 무효화하고 세션 쿠키를 만료시킨다. 이미 세션이 없거나 만료된 경우에도 성공으로 처리한다. */
         post: operations["logout"];
         delete?: never;
         options?: never;
@@ -161,24 +162,9 @@ export interface paths {
         };
         get?: never;
         put?: never;
+        /** @description 자격 증명을 검증하고 서버 세션을 생성한다. 성공 시 세션 쿠키와 현재 사용자 프로필을 한 번의 응답으로 반환한다. */
         post: operations["login"];
         delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/admin/users/{userId}/roles/floor-manager": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["promoteFloorManager"];
-        delete: operations["demoteFloorManager"];
         options?: never;
         head?: never;
         patch?: never;
@@ -448,6 +434,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/csrf": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * CSRF 토큰 발급
+         * @description SPA가 로그인, 로그아웃과 상태 변경 요청 헤더에 전달할 CSRF 토큰을 발급한다.
+         */
+        get: operations["getCsrfToken"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/healthz": {
         parameters: {
             query?: never;
@@ -487,6 +493,10 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
+        /**
+         * 접근 가능한 냉장고 칸 조회
+         * @description 인증된 일반 거주자의 현재 거주 호실에 활성 배정된 냉장고 칸을 조회한다. 배정된 칸은 운영 상태와 관계없이 조회하므로 RETIRED 칸도 상태와 함께 반환될 수 있다. 결과는 floorNo, fridgeId, displayName, slotId 오름차순으로 정렬한다.
+         */
         get: operations["getSlots"];
         put?: never;
         post?: never;
@@ -536,6 +546,22 @@ export interface paths {
             cookie?: never;
         };
         get: operations["getUsers"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/fridge/issues": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getFridgeOwnershipIssues"];
         put?: never;
         post?: never;
         delete?: never;
@@ -596,10 +622,66 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/fridge/inspections/{sessionId}/actions/{actionId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete: operations["deleteAction"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/fridge/inspections/{sessionId}/notifications/resend": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["resendInspectionNotification"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        CsrfTokenResponse: {
+            /** @example X-CSRF-TOKEN */
+            headerName: string;
+            /** @example _csrf */
+            parameterName: string;
+            token: string;
+        };
+        ProblemDetail: {
+            /** Format: uri */
+            type?: string;
+            title?: string;
+            /** Format: int32 */
+            status?: number;
+            detail?: string;
+            /** Format: uri */
+            instance?: string;
+            code?: string;
+            errors?: {
+                [key: string]: string[];
+            };
+            properties?: {
+                [key: string]: unknown;
+            };
+        };
         NotificationPolicy: {
             batchTime: string;
             /** Format: int32 */
@@ -623,15 +705,22 @@ export interface components {
             scheduleId?: string;
         };
         FridgeBundleResponse: {
-            /** Format: uuid */
+            /**
+             * Format: uuid
+             * @description 포장의 UUID 영속 식별자. 라벨 번호와 구분하며 API 및 이력 연결에 사용한다.
+             */
             bundleId?: string;
             /** Format: uuid */
             slotId?: string;
             /** Format: int32 */
             slotIndex?: number;
             slotLabel?: string;
-            /** Format: int32 */
+            /**
+             * Format: int32
+             * @description 동일 Slot 안에서 발급되는 사용자용 라벨 번호. 화면에서는 3자리로 표시한다.
+             */
             labelNumber?: number;
+            /** @description 현재 slotLabel과 3자리 labelNumber를 조합한 표시값. 영속 식별자나 유일성 기준으로 사용하지 않는다. */
             labelDisplay?: string;
             bundleName?: string;
             memo?: string;
@@ -870,9 +959,13 @@ export interface components {
             loginId?: string;
             displayName?: string;
             email?: string;
-            roles?: string[];
+            /** @description 계정 자체에 부여된 권한. 거주 자격과 냉장고 관리 업무는 포함하지 않는다. */
+            accountAuthorities?: string[];
             primaryRoom?: components["schemas"]["RoomAssignmentResponse"];
-            isFloorManager?: boolean;
+            /** @description 활성 거주 배정이 존재하는지 여부 */
+            isResident?: boolean;
+            /** @description 활성 SlotManagerAssignment가 하나 이상 존재하는지 여부 */
+            isFridgeManager?: boolean;
             isAdmin?: boolean;
             /** Format: date-time */
             createdAt?: string;
@@ -885,7 +978,6 @@ export interface components {
         LoginRequest: {
             loginId: string;
             password: string;
-            deviceId: string;
         };
         SeedResponse: {
             message?: string;
@@ -1009,6 +1101,7 @@ export interface components {
         };
         UpdateUserStatusRequest: {
             status: string;
+            reason: string;
         };
         UpdateCompartmentConfigRequest: {
             /** Format: int32 */
@@ -1017,28 +1110,27 @@ export interface components {
         };
         FridgeSlotResponse: {
             /** Format: uuid */
-            slotId?: string;
-            /** Format: int32 */
-            slotIndex?: number;
-            slotLetter?: string;
-            /** Format: int32 */
-            floorNo?: number;
-            floorCode?: string;
-            compartmentType?: string;
-            resourceStatus?: string;
+            slotId: string;
             /**
-             * @description Computed status that indicates whether the compartment is ACTIVE, LOCKED, or currently IN_INSPECTION.
-             * @enum {string}
+             * Format: uuid
+             * @description Slot이 소속된 물리적 냉장고의 영속 식별자
              */
-            slotStatus?: "ACTIVE" | "LOCKED" | "IN_INSPECTION";
-            locked?: boolean;
-            /** Format: date-time */
-            lockedUntil?: string;
+            fridgeId: string;
+            /**
+             * Format: int32
+             * @description 필터와 정렬에 사용하는 층 번호
+             */
+            floorNo: number;
+            /** @description 사용자에게 표시하는 층 코드 */
+            floorCode: string;
+            compartmentType: string;
+            resourceStatus: string;
             /** Format: int32 */
-            capacity?: number;
-            displayName?: string;
+            capacity: number;
+            /** @description 관리자가 지정하며 사용자가 칸을 구분할 때 사용하는 필수 표시명. A칸, 1번 칸, 상단 냉장칸 등 운영 환경에 맞는 표기를 담으며 영속 식별이나 관계 키로 사용하지 않는다. */
+            displayName: string;
             /** Format: int32 */
-            occupiedCount?: number;
+            occupiedCount: number;
         };
         HealthResponse: {
             status?: string;
@@ -1078,15 +1170,21 @@ export interface components {
             items?: components["schemas"]["NotificationPreferenceItemResponse"][];
         };
         FridgeSlotListResponse: {
-            items?: components["schemas"]["FridgeSlotResponse"][];
-            /** Format: int64 */
-            totalCount?: number;
+            items: components["schemas"]["FridgeSlotResponse"][];
+            /**
+             * Format: int64
+             * @description 권한 범위와 요청 필터를 모두 적용한 전체 결과 수
+             */
+            totalCount: number;
             /** Format: int32 */
-            page?: number;
+            page: number;
             /** Format: int32 */
-            size?: number;
-            /** Format: int32 */
-            totalPages?: number;
+            size: number;
+            /**
+             * Format: int32
+             * @description 필터 적용 후 totalCount와 요청 size로 계산한 전체 페이지 수
+             */
+            totalPages: number;
         };
         BundleListResponse: {
             items?: components["schemas"]["FridgeBundleSummaryResponse"][];
@@ -1094,15 +1192,22 @@ export interface components {
             totalCount?: number;
         };
         FridgeBundleSummaryResponse: {
-            /** Format: uuid */
+            /**
+             * Format: uuid
+             * @description 포장의 UUID 영속 식별자. 라벨 번호와 구분하며 API 및 이력 연결에 사용한다.
+             */
             bundleId?: string;
             /** Format: uuid */
             slotId?: string;
             /** Format: int32 */
             slotIndex?: number;
             slotLabel?: string;
-            /** Format: int32 */
+            /**
+             * Format: int32
+             * @description 동일 Slot 안에서 발급되는 사용자용 라벨 번호. 화면에서는 3자리로 표시한다.
+             */
             labelNumber?: number;
+            /** @description 현재 slotLabel과 3자리 labelNumber를 조합한 표시값. 영속 식별자나 유일성 기준으로 사용하지 않는다. */
             labelDisplay?: string;
             bundleName?: string;
             memo?: string;
@@ -1120,6 +1225,7 @@ export interface components {
             updatedAt?: string;
             /** Format: date-time */
             removedAt?: string;
+            items?: components["schemas"]["FridgeItemResponse"][];
         };
         AdminUsersResponse: {
             items?: components["schemas"]["User"][];
@@ -1133,6 +1239,14 @@ export interface components {
             totalPages?: number;
             availableFloors?: number[];
         };
+        PenaltyRecord: {
+            module?: string;
+            source?: string;
+            /** Format: int32 */
+            points?: number;
+            reason?: string;
+            issuedAt?: string;
+        };
         User: {
             id?: string;
             name?: string;
@@ -1142,16 +1256,61 @@ export interface components {
             roomCode?: string;
             /** Format: int32 */
             personalNo?: number;
-            role?: string;
-            roles?: string[];
+            /** @description 계정 자체에 부여된 권한 */
+            accountAuthorities?: string[];
+            isResident?: boolean;
+            isFridgeManager?: boolean;
             status?: string;
             lastLogin?: string;
             /** Format: int32 */
             penalties?: number;
+            penaltyRecords?: components["schemas"]["PenaltyRecord"][];
         };
         AdminPoliciesResponse: {
             notification?: components["schemas"]["NotificationPolicy"];
             penalty?: components["schemas"]["PenaltyPolicy"];
+        };
+        AdminFridgeOwnershipIssuesResponse: {
+            items?: components["schemas"]["Issue"][];
+            /** Format: int32 */
+            page?: number;
+            /** Format: int32 */
+            size?: number;
+            /** Format: int64 */
+            totalElements?: number;
+            /** Format: int32 */
+            totalPages?: number;
+        };
+        Issue: {
+            /** Format: uuid */
+            bundleId?: string;
+            bundleName?: string;
+            /** Format: int32 */
+            labelNumber?: number;
+            /** Format: uuid */
+            ownerUserId?: string;
+            ownerName?: string;
+            ownerLoginId?: string;
+            /** Format: uuid */
+            roomId?: string;
+            roomNumber?: string;
+            /** Format: int32 */
+            roomFloor?: number;
+            /** Format: int32 */
+            personalNo?: number;
+            /** Format: uuid */
+            fridgeCompartmentId?: string;
+            /** Format: int32 */
+            slotIndex?: number;
+            compartmentType?: string;
+            /** Format: int32 */
+            fridgeFloorNo?: number;
+            fridgeDisplayName?: string;
+            issueType?: string;
+            /** Format: date-time */
+            createdAt?: string;
+            /** Format: date-time */
+            updatedAt?: string;
         };
         AdminDashboardResponse: {
             summary?: components["schemas"]["SummaryCard"][];
@@ -1178,7 +1337,60 @@ export interface components {
             detail?: string;
         };
     };
-    responses: never;
+    responses: {
+        /** @description CSRF 토큰이 누락·불일치·만료되어 요청 검증에 실패함. 세부 원인은 외부에서 구분하지 않는다. */
+        CsrfInvalidResponse: {
+            headers: {
+                [name: string]: unknown;
+            };
+            content: {
+                /**
+                 * @example {
+                 *       "title": "요청 검증 실패",
+                 *       "status": 403,
+                 *       "detail": "보안 토큰이 유효하지 않습니다. 페이지를 새로고침한 뒤 다시 시도해 주세요.",
+                 *       "code": "CSRF_INVALID"
+                 *     }
+                 */
+                "application/problem+json": components["schemas"]["ProblemDetail"];
+            };
+        };
+        /** @description 로그인이 금지된 이유를 안정적인 오류 코드로 구분한다. ACCOUNT_INACTIVE는 올바른 자격 증명의 비활성 계정, CSRF_INVALID는 CSRF 토큰 누락·불일치·만료에 사용한다. */
+        LoginForbiddenResponse: {
+            headers: {
+                [name: string]: unknown;
+            };
+            content: {
+                "application/problem+json": components["schemas"]["ProblemDetail"];
+            };
+        };
+        /** @description 아이디가 존재하지 않거나 비밀번호가 일치하지 않음. 두 원인을 외부 응답에서 구분하지 않는다. */
+        InvalidCredentialsResponse: {
+            headers: {
+                [name: string]: unknown;
+            };
+            content: {
+                /**
+                 * @example {
+                 *       "title": "인증 실패",
+                 *       "status": 401,
+                 *       "detail": "아이디 또는 비밀번호가 올바르지 않습니다.",
+                 *       "code": "AUTH_INVALID_CREDENTIALS"
+                 *     }
+                 */
+                "application/problem+json": components["schemas"]["ProblemDetail"];
+            };
+        };
+        /** @description Error response in ProblemDetail format */
+        ProblemDetailResponse: {
+            headers: {
+                [name: string]: unknown;
+            };
+            content: {
+                "application/problem+json": components["schemas"]["ProblemDetail"];
+            };
+        };
+    };
     parameters: never;
     requestBodies: never;
     headers: never;
@@ -1204,6 +1416,13 @@ export interface operations {
                     "*/*": components["schemas"]["AdminPoliciesResponse"];
                 };
             };
+            400: components["responses"]["ProblemDetailResponse"];
+            401: components["responses"]["ProblemDetailResponse"];
+            403: components["responses"]["ProblemDetailResponse"];
+            404: components["responses"]["ProblemDetailResponse"];
+            409: components["responses"]["ProblemDetailResponse"];
+            422: components["responses"]["ProblemDetailResponse"];
+            500: components["responses"]["ProblemDetailResponse"];
         };
     };
     updatePolicies: {
@@ -1226,6 +1445,13 @@ export interface operations {
                 };
                 content?: never;
             };
+            400: components["responses"]["ProblemDetailResponse"];
+            401: components["responses"]["ProblemDetailResponse"];
+            403: components["responses"]["ProblemDetailResponse"];
+            404: components["responses"]["ProblemDetailResponse"];
+            409: components["responses"]["ProblemDetailResponse"];
+            422: components["responses"]["ProblemDetailResponse"];
+            500: components["responses"]["ProblemDetailResponse"];
         };
     };
     listSessions: {
@@ -1250,6 +1476,13 @@ export interface operations {
                     "*/*": components["schemas"]["InspectionSessionResponse"][];
                 };
             };
+            400: components["responses"]["ProblemDetailResponse"];
+            401: components["responses"]["ProblemDetailResponse"];
+            403: components["responses"]["ProblemDetailResponse"];
+            404: components["responses"]["ProblemDetailResponse"];
+            409: components["responses"]["ProblemDetailResponse"];
+            422: components["responses"]["ProblemDetailResponse"];
+            500: components["responses"]["ProblemDetailResponse"];
         };
     };
     startSession: {
@@ -1274,6 +1507,13 @@ export interface operations {
                     "*/*": components["schemas"]["InspectionSessionResponse"];
                 };
             };
+            400: components["responses"]["ProblemDetailResponse"];
+            401: components["responses"]["ProblemDetailResponse"];
+            403: components["responses"]["ProblemDetailResponse"];
+            404: components["responses"]["ProblemDetailResponse"];
+            409: components["responses"]["ProblemDetailResponse"];
+            422: components["responses"]["ProblemDetailResponse"];
+            500: components["responses"]["ProblemDetailResponse"];
         };
     };
     submitSession: {
@@ -1300,6 +1540,13 @@ export interface operations {
                     "*/*": components["schemas"]["InspectionSessionResponse"];
                 };
             };
+            400: components["responses"]["ProblemDetailResponse"];
+            401: components["responses"]["ProblemDetailResponse"];
+            403: components["responses"]["ProblemDetailResponse"];
+            404: components["responses"]["ProblemDetailResponse"];
+            409: components["responses"]["ProblemDetailResponse"];
+            422: components["responses"]["ProblemDetailResponse"];
+            500: components["responses"]["ProblemDetailResponse"];
         };
     };
     recordActions: {
@@ -1326,6 +1573,13 @@ export interface operations {
                     "*/*": components["schemas"]["InspectionSessionResponse"];
                 };
             };
+            400: components["responses"]["ProblemDetailResponse"];
+            401: components["responses"]["ProblemDetailResponse"];
+            403: components["responses"]["ProblemDetailResponse"];
+            404: components["responses"]["ProblemDetailResponse"];
+            409: components["responses"]["ProblemDetailResponse"];
+            422: components["responses"]["ProblemDetailResponse"];
+            500: components["responses"]["ProblemDetailResponse"];
         };
     };
     listSchedules: {
@@ -1333,6 +1587,8 @@ export interface operations {
             query?: {
                 status?: string;
                 limit?: number;
+                floor?: number;
+                compartmentId?: string[];
             };
             header?: never;
             path?: never;
@@ -1349,6 +1605,13 @@ export interface operations {
                     "*/*": components["schemas"]["InspectionScheduleResponse"][];
                 };
             };
+            400: components["responses"]["ProblemDetailResponse"];
+            401: components["responses"]["ProblemDetailResponse"];
+            403: components["responses"]["ProblemDetailResponse"];
+            404: components["responses"]["ProblemDetailResponse"];
+            409: components["responses"]["ProblemDetailResponse"];
+            422: components["responses"]["ProblemDetailResponse"];
+            500: components["responses"]["ProblemDetailResponse"];
         };
     };
     createSchedule: {
@@ -1373,6 +1636,13 @@ export interface operations {
                     "*/*": components["schemas"]["InspectionScheduleResponse"];
                 };
             };
+            400: components["responses"]["ProblemDetailResponse"];
+            401: components["responses"]["ProblemDetailResponse"];
+            403: components["responses"]["ProblemDetailResponse"];
+            404: components["responses"]["ProblemDetailResponse"];
+            409: components["responses"]["ProblemDetailResponse"];
+            422: components["responses"]["ProblemDetailResponse"];
+            500: components["responses"]["ProblemDetailResponse"];
         };
     };
     getBundles: {
@@ -1400,6 +1670,13 @@ export interface operations {
                     "*/*": components["schemas"]["BundleListResponse"];
                 };
             };
+            400: components["responses"]["ProblemDetailResponse"];
+            401: components["responses"]["ProblemDetailResponse"];
+            403: components["responses"]["ProblemDetailResponse"];
+            404: components["responses"]["ProblemDetailResponse"];
+            409: components["responses"]["ProblemDetailResponse"];
+            422: components["responses"]["ProblemDetailResponse"];
+            500: components["responses"]["ProblemDetailResponse"];
         };
     };
     createBundle: {
@@ -1424,6 +1701,11 @@ export interface operations {
                     "*/*": components["schemas"]["CreateBundleResponse"];
                 };
             };
+            400: components["responses"]["ProblemDetailResponse"];
+            401: components["responses"]["ProblemDetailResponse"];
+            403: components["responses"]["ProblemDetailResponse"];
+            404: components["responses"]["ProblemDetailResponse"];
+            409: components["responses"]["ProblemDetailResponse"];
             /** @description 허용량 초과 – detail 값이 `CAPACITY_EXCEEDED` */
             422: {
                 headers: {
@@ -1433,6 +1715,7 @@ export interface operations {
                     "*/*": components["schemas"]["CreateBundleResponse"];
                 };
             };
+            500: components["responses"]["ProblemDetailResponse"];
         };
     };
     addItem: {
@@ -1459,6 +1742,13 @@ export interface operations {
                     "*/*": components["schemas"]["FridgeItemResponse"];
                 };
             };
+            400: components["responses"]["ProblemDetailResponse"];
+            401: components["responses"]["ProblemDetailResponse"];
+            403: components["responses"]["ProblemDetailResponse"];
+            404: components["responses"]["ProblemDetailResponse"];
+            409: components["responses"]["ProblemDetailResponse"];
+            422: components["responses"]["ProblemDetailResponse"];
+            500: components["responses"]["ProblemDetailResponse"];
         };
     };
     refresh: {
@@ -1483,6 +1773,13 @@ export interface operations {
                     "*/*": components["schemas"]["LoginResponse"];
                 };
             };
+            400: components["responses"]["ProblemDetailResponse"];
+            401: components["responses"]["ProblemDetailResponse"];
+            403: components["responses"]["ProblemDetailResponse"];
+            404: components["responses"]["ProblemDetailResponse"];
+            409: components["responses"]["ProblemDetailResponse"];
+            422: components["responses"]["ProblemDetailResponse"];
+            500: components["responses"]["ProblemDetailResponse"];
         };
     };
     logout: {
@@ -1492,19 +1789,17 @@ export interface operations {
             path?: never;
             cookie?: never;
         };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["LogoutRequest"];
-            };
-        };
+        requestBody?: never;
         responses: {
-            /** @description OK */
-            200: {
+            /** @description 로그아웃 완료. 응답 본문은 없다. */
+            204: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content?: never;
             };
+            403: components["responses"]["CsrfInvalidResponse"];
+            500: components["responses"]["ProblemDetailResponse"];
         };
     };
     login: {
@@ -1520,55 +1815,22 @@ export interface operations {
             };
         };
         responses: {
-            /** @description OK */
+            /** @description 로그인 성공. 응답의 Set-Cookie로 HttpOnly 세션 쿠키를 발급한다. */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["LoginResponse"];
+                    "application/json": components["schemas"]["UserProfileResponse"];
                 };
             };
-        };
-    };
-    promoteFloorManager: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                userId: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    demoteFloorManager: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                userId: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
+            400: components["responses"]["ProblemDetailResponse"];
+            401: components["responses"]["InvalidCredentialsResponse"];
+            403: components["responses"]["LoginForbiddenResponse"];
+            404: components["responses"]["ProblemDetailResponse"];
+            409: components["responses"]["ProblemDetailResponse"];
+            422: components["responses"]["ProblemDetailResponse"];
+            500: components["responses"]["ProblemDetailResponse"];
         };
     };
     seedFridgeDemo: {
@@ -1589,6 +1851,8 @@ export interface operations {
                     "*/*": components["schemas"]["SeedResponse"];
                 };
             };
+            400: components["responses"]["ProblemDetailResponse"];
+            401: components["responses"]["ProblemDetailResponse"];
             /** @description 관리자 권한 필요 */
             403: {
                 headers: {
@@ -1598,6 +1862,10 @@ export interface operations {
                     "*/*": components["schemas"]["SeedResponse"];
                 };
             };
+            404: components["responses"]["ProblemDetailResponse"];
+            409: components["responses"]["ProblemDetailResponse"];
+            422: components["responses"]["ProblemDetailResponse"];
+            500: components["responses"]["ProblemDetailResponse"];
         };
     };
     preview: {
@@ -1622,6 +1890,13 @@ export interface operations {
                     "*/*": components["schemas"]["ReallocationPreviewResponse"];
                 };
             };
+            400: components["responses"]["ProblemDetailResponse"];
+            401: components["responses"]["ProblemDetailResponse"];
+            403: components["responses"]["ProblemDetailResponse"];
+            404: components["responses"]["ProblemDetailResponse"];
+            409: components["responses"]["ProblemDetailResponse"];
+            422: components["responses"]["ProblemDetailResponse"];
+            500: components["responses"]["ProblemDetailResponse"];
         };
     };
     apply: {
@@ -1646,6 +1921,13 @@ export interface operations {
                     "*/*": components["schemas"]["ReallocationApplyResponse"];
                 };
             };
+            400: components["responses"]["ProblemDetailResponse"];
+            401: components["responses"]["ProblemDetailResponse"];
+            403: components["responses"]["ProblemDetailResponse"];
+            404: components["responses"]["ProblemDetailResponse"];
+            409: components["responses"]["ProblemDetailResponse"];
+            422: components["responses"]["ProblemDetailResponse"];
+            500: components["responses"]["ProblemDetailResponse"];
         };
     };
     markRead: {
@@ -1666,6 +1948,13 @@ export interface operations {
                 };
                 content?: never;
             };
+            400: components["responses"]["ProblemDetailResponse"];
+            401: components["responses"]["ProblemDetailResponse"];
+            403: components["responses"]["ProblemDetailResponse"];
+            404: components["responses"]["ProblemDetailResponse"];
+            409: components["responses"]["ProblemDetailResponse"];
+            422: components["responses"]["ProblemDetailResponse"];
+            500: components["responses"]["ProblemDetailResponse"];
         };
     };
     markAllRead: {
@@ -1684,6 +1973,13 @@ export interface operations {
                 };
                 content?: never;
             };
+            400: components["responses"]["ProblemDetailResponse"];
+            401: components["responses"]["ProblemDetailResponse"];
+            403: components["responses"]["ProblemDetailResponse"];
+            404: components["responses"]["ProblemDetailResponse"];
+            409: components["responses"]["ProblemDetailResponse"];
+            422: components["responses"]["ProblemDetailResponse"];
+            500: components["responses"]["ProblemDetailResponse"];
         };
     };
     updatePreference: {
@@ -1710,6 +2006,13 @@ export interface operations {
                     "*/*": components["schemas"]["NotificationPreferenceItemResponse"];
                 };
             };
+            400: components["responses"]["ProblemDetailResponse"];
+            401: components["responses"]["ProblemDetailResponse"];
+            403: components["responses"]["ProblemDetailResponse"];
+            404: components["responses"]["ProblemDetailResponse"];
+            409: components["responses"]["ProblemDetailResponse"];
+            422: components["responses"]["ProblemDetailResponse"];
+            500: components["responses"]["ProblemDetailResponse"];
         };
     };
     deleteItem: {
@@ -1730,6 +2033,13 @@ export interface operations {
                 };
                 content?: never;
             };
+            400: components["responses"]["ProblemDetailResponse"];
+            401: components["responses"]["ProblemDetailResponse"];
+            403: components["responses"]["ProblemDetailResponse"];
+            404: components["responses"]["ProblemDetailResponse"];
+            409: components["responses"]["ProblemDetailResponse"];
+            422: components["responses"]["ProblemDetailResponse"];
+            500: components["responses"]["ProblemDetailResponse"];
         };
     };
     updateItem: {
@@ -1756,6 +2066,13 @@ export interface operations {
                     "*/*": components["schemas"]["FridgeItemResponse"];
                 };
             };
+            400: components["responses"]["ProblemDetailResponse"];
+            401: components["responses"]["ProblemDetailResponse"];
+            403: components["responses"]["ProblemDetailResponse"];
+            404: components["responses"]["ProblemDetailResponse"];
+            409: components["responses"]["ProblemDetailResponse"];
+            422: components["responses"]["ProblemDetailResponse"];
+            500: components["responses"]["ProblemDetailResponse"];
         };
     };
     getSession: {
@@ -1778,6 +2095,13 @@ export interface operations {
                     "*/*": components["schemas"]["InspectionSessionResponse"];
                 };
             };
+            400: components["responses"]["ProblemDetailResponse"];
+            401: components["responses"]["ProblemDetailResponse"];
+            403: components["responses"]["ProblemDetailResponse"];
+            404: components["responses"]["ProblemDetailResponse"];
+            409: components["responses"]["ProblemDetailResponse"];
+            422: components["responses"]["ProblemDetailResponse"];
+            500: components["responses"]["ProblemDetailResponse"];
         };
     };
     cancelSession: {
@@ -1798,6 +2122,13 @@ export interface operations {
                 };
                 content?: never;
             };
+            400: components["responses"]["ProblemDetailResponse"];
+            401: components["responses"]["ProblemDetailResponse"];
+            403: components["responses"]["ProblemDetailResponse"];
+            404: components["responses"]["ProblemDetailResponse"];
+            409: components["responses"]["ProblemDetailResponse"];
+            422: components["responses"]["ProblemDetailResponse"];
+            500: components["responses"]["ProblemDetailResponse"];
         };
     };
     updateSession: {
@@ -1824,6 +2155,13 @@ export interface operations {
                     "*/*": components["schemas"]["InspectionSessionResponse"];
                 };
             };
+            400: components["responses"]["ProblemDetailResponse"];
+            401: components["responses"]["ProblemDetailResponse"];
+            403: components["responses"]["ProblemDetailResponse"];
+            404: components["responses"]["ProblemDetailResponse"];
+            409: components["responses"]["ProblemDetailResponse"];
+            422: components["responses"]["ProblemDetailResponse"];
+            500: components["responses"]["ProblemDetailResponse"];
         };
     };
     deleteSchedule: {
@@ -1844,6 +2182,13 @@ export interface operations {
                 };
                 content?: never;
             };
+            400: components["responses"]["ProblemDetailResponse"];
+            401: components["responses"]["ProblemDetailResponse"];
+            403: components["responses"]["ProblemDetailResponse"];
+            404: components["responses"]["ProblemDetailResponse"];
+            409: components["responses"]["ProblemDetailResponse"];
+            422: components["responses"]["ProblemDetailResponse"];
+            500: components["responses"]["ProblemDetailResponse"];
         };
     };
     updateSchedule: {
@@ -1870,6 +2215,13 @@ export interface operations {
                     "*/*": components["schemas"]["InspectionScheduleResponse"];
                 };
             };
+            400: components["responses"]["ProblemDetailResponse"];
+            401: components["responses"]["ProblemDetailResponse"];
+            403: components["responses"]["ProblemDetailResponse"];
+            404: components["responses"]["ProblemDetailResponse"];
+            409: components["responses"]["ProblemDetailResponse"];
+            422: components["responses"]["ProblemDetailResponse"];
+            500: components["responses"]["ProblemDetailResponse"];
         };
     };
     getBundle: {
@@ -1892,6 +2244,13 @@ export interface operations {
                     "*/*": components["schemas"]["FridgeBundleResponse"];
                 };
             };
+            400: components["responses"]["ProblemDetailResponse"];
+            401: components["responses"]["ProblemDetailResponse"];
+            403: components["responses"]["ProblemDetailResponse"];
+            404: components["responses"]["ProblemDetailResponse"];
+            409: components["responses"]["ProblemDetailResponse"];
+            422: components["responses"]["ProblemDetailResponse"];
+            500: components["responses"]["ProblemDetailResponse"];
         };
     };
     deleteBundle: {
@@ -1912,6 +2271,13 @@ export interface operations {
                 };
                 content?: never;
             };
+            400: components["responses"]["ProblemDetailResponse"];
+            401: components["responses"]["ProblemDetailResponse"];
+            403: components["responses"]["ProblemDetailResponse"];
+            404: components["responses"]["ProblemDetailResponse"];
+            409: components["responses"]["ProblemDetailResponse"];
+            422: components["responses"]["ProblemDetailResponse"];
+            500: components["responses"]["ProblemDetailResponse"];
         };
     };
     updateBundle: {
@@ -1938,6 +2304,13 @@ export interface operations {
                     "*/*": components["schemas"]["FridgeBundleResponse"];
                 };
             };
+            400: components["responses"]["ProblemDetailResponse"];
+            401: components["responses"]["ProblemDetailResponse"];
+            403: components["responses"]["ProblemDetailResponse"];
+            404: components["responses"]["ProblemDetailResponse"];
+            409: components["responses"]["ProblemDetailResponse"];
+            422: components["responses"]["ProblemDetailResponse"];
+            500: components["responses"]["ProblemDetailResponse"];
         };
     };
     updateUserStatus: {
@@ -1962,6 +2335,13 @@ export interface operations {
                 };
                 content?: never;
             };
+            400: components["responses"]["ProblemDetailResponse"];
+            401: components["responses"]["ProblemDetailResponse"];
+            403: components["responses"]["ProblemDetailResponse"];
+            404: components["responses"]["ProblemDetailResponse"];
+            409: components["responses"]["ProblemDetailResponse"];
+            422: components["responses"]["ProblemDetailResponse"];
+            500: components["responses"]["ProblemDetailResponse"];
         };
     };
     updateCompartment: {
@@ -1988,6 +2368,8 @@ export interface operations {
                     "*/*": components["schemas"]["FridgeSlotResponse"];
                 };
             };
+            400: components["responses"]["ProblemDetailResponse"];
+            401: components["responses"]["ProblemDetailResponse"];
             /** @description 관리자 권한 필요 */
             403: {
                 headers: {
@@ -2024,6 +2406,7 @@ export interface operations {
                     "*/*": components["schemas"]["FridgeSlotResponse"];
                 };
             };
+            500: components["responses"]["ProblemDetailResponse"];
         };
     };
     readyz: {
@@ -2044,6 +2427,13 @@ export interface operations {
                     "*/*": components["schemas"]["HealthResponse"];
                 };
             };
+            400: components["responses"]["ProblemDetailResponse"];
+            401: components["responses"]["ProblemDetailResponse"];
+            403: components["responses"]["ProblemDetailResponse"];
+            404: components["responses"]["ProblemDetailResponse"];
+            409: components["responses"]["ProblemDetailResponse"];
+            422: components["responses"]["ProblemDetailResponse"];
+            500: components["responses"]["ProblemDetailResponse"];
         };
     };
     currentUser: {
@@ -2064,6 +2454,13 @@ export interface operations {
                     "*/*": components["schemas"]["UserProfileResponse"];
                 };
             };
+            400: components["responses"]["ProblemDetailResponse"];
+            401: components["responses"]["ProblemDetailResponse"];
+            403: components["responses"]["ProblemDetailResponse"];
+            404: components["responses"]["ProblemDetailResponse"];
+            409: components["responses"]["ProblemDetailResponse"];
+            422: components["responses"]["ProblemDetailResponse"];
+            500: components["responses"]["ProblemDetailResponse"];
         };
     };
     getNotifications: {
@@ -2088,6 +2485,13 @@ export interface operations {
                     "*/*": components["schemas"]["NotificationListResponse"];
                 };
             };
+            400: components["responses"]["ProblemDetailResponse"];
+            401: components["responses"]["ProblemDetailResponse"];
+            403: components["responses"]["ProblemDetailResponse"];
+            404: components["responses"]["ProblemDetailResponse"];
+            409: components["responses"]["ProblemDetailResponse"];
+            422: components["responses"]["ProblemDetailResponse"];
+            500: components["responses"]["ProblemDetailResponse"];
         };
     };
     getPreferences: {
@@ -2108,6 +2512,34 @@ export interface operations {
                     "*/*": components["schemas"]["NotificationPreferenceResponse"];
                 };
             };
+            400: components["responses"]["ProblemDetailResponse"];
+            401: components["responses"]["ProblemDetailResponse"];
+            403: components["responses"]["ProblemDetailResponse"];
+            404: components["responses"]["ProblemDetailResponse"];
+            409: components["responses"]["ProblemDetailResponse"];
+            422: components["responses"]["ProblemDetailResponse"];
+            500: components["responses"]["ProblemDetailResponse"];
+        };
+    };
+    getCsrfToken: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CsrfTokenResponse"];
+                };
+            };
+            500: components["responses"]["ProblemDetailResponse"];
         };
     };
     healthz: {
@@ -2128,6 +2560,13 @@ export interface operations {
                     "*/*": components["schemas"]["HealthResponse"];
                 };
             };
+            400: components["responses"]["ProblemDetailResponse"];
+            401: components["responses"]["ProblemDetailResponse"];
+            403: components["responses"]["ProblemDetailResponse"];
+            404: components["responses"]["ProblemDetailResponse"];
+            409: components["responses"]["ProblemDetailResponse"];
+            422: components["responses"]["ProblemDetailResponse"];
+            500: components["responses"]["ProblemDetailResponse"];
         };
     };
     health: {
@@ -2148,13 +2587,18 @@ export interface operations {
                     "*/*": components["schemas"]["HealthResponse"];
                 };
             };
+            400: components["responses"]["ProblemDetailResponse"];
+            401: components["responses"]["ProblemDetailResponse"];
+            403: components["responses"]["ProblemDetailResponse"];
+            404: components["responses"]["ProblemDetailResponse"];
+            409: components["responses"]["ProblemDetailResponse"];
+            422: components["responses"]["ProblemDetailResponse"];
+            500: components["responses"]["ProblemDetailResponse"];
         };
     };
     getSlots: {
         parameters: {
             query?: {
-                floor?: number;
-                view?: string;
                 page?: number;
                 size?: number;
             };
@@ -2170,9 +2614,13 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["FridgeSlotListResponse"];
+                    "application/json": components["schemas"]["FridgeSlotListResponse"];
                 };
             };
+            400: components["responses"]["ProblemDetailResponse"];
+            401: components["responses"]["ProblemDetailResponse"];
+            403: components["responses"]["ProblemDetailResponse"];
+            500: components["responses"]["ProblemDetailResponse"];
         };
     };
     getActiveSession: {
@@ -2195,6 +2643,13 @@ export interface operations {
                     "*/*": components["schemas"]["InspectionSessionResponse"];
                 };
             };
+            400: components["responses"]["ProblemDetailResponse"];
+            401: components["responses"]["ProblemDetailResponse"];
+            403: components["responses"]["ProblemDetailResponse"];
+            404: components["responses"]["ProblemDetailResponse"];
+            409: components["responses"]["ProblemDetailResponse"];
+            422: components["responses"]["ProblemDetailResponse"];
+            500: components["responses"]["ProblemDetailResponse"];
         };
     };
     getNextSchedule: {
@@ -2215,6 +2670,13 @@ export interface operations {
                     "*/*": components["schemas"]["InspectionScheduleResponse"];
                 };
             };
+            400: components["responses"]["ProblemDetailResponse"];
+            401: components["responses"]["ProblemDetailResponse"];
+            403: components["responses"]["ProblemDetailResponse"];
+            404: components["responses"]["ProblemDetailResponse"];
+            409: components["responses"]["ProblemDetailResponse"];
+            422: components["responses"]["ProblemDetailResponse"];
+            500: components["responses"]["ProblemDetailResponse"];
         };
     };
     getUsers: {
@@ -2222,8 +2684,8 @@ export interface operations {
             query?: {
                 status?: string;
                 floor?: string;
+                fridgeManagerOnly?: boolean;
                 search?: string;
-                floorManagerOnly?: boolean;
                 page?: number;
                 size?: number;
             };
@@ -2242,6 +2704,44 @@ export interface operations {
                     "*/*": components["schemas"]["AdminUsersResponse"];
                 };
             };
+            400: components["responses"]["ProblemDetailResponse"];
+            401: components["responses"]["ProblemDetailResponse"];
+            403: components["responses"]["ProblemDetailResponse"];
+            404: components["responses"]["ProblemDetailResponse"];
+            409: components["responses"]["ProblemDetailResponse"];
+            422: components["responses"]["ProblemDetailResponse"];
+            500: components["responses"]["ProblemDetailResponse"];
+        };
+    };
+    getFridgeOwnershipIssues: {
+        parameters: {
+            query?: {
+                page?: number;
+                size?: number;
+                ownerId?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["AdminFridgeOwnershipIssuesResponse"];
+                };
+            };
+            400: components["responses"]["ProblemDetailResponse"];
+            401: components["responses"]["ProblemDetailResponse"];
+            403: components["responses"]["ProblemDetailResponse"];
+            404: components["responses"]["ProblemDetailResponse"];
+            409: components["responses"]["ProblemDetailResponse"];
+            422: components["responses"]["ProblemDetailResponse"];
+            500: components["responses"]["ProblemDetailResponse"];
         };
     };
     listCompartments: {
@@ -2265,6 +2765,8 @@ export interface operations {
                     "*/*": components["schemas"]["FridgeSlotResponse"][];
                 };
             };
+            400: components["responses"]["ProblemDetailResponse"];
+            401: components["responses"]["ProblemDetailResponse"];
             /** @description 관리자 권한 필요 */
             403: {
                 headers: {
@@ -2274,6 +2776,10 @@ export interface operations {
                     "*/*": components["schemas"]["FridgeSlotResponse"][];
                 };
             };
+            404: components["responses"]["ProblemDetailResponse"];
+            409: components["responses"]["ProblemDetailResponse"];
+            422: components["responses"]["ProblemDetailResponse"];
+            500: components["responses"]["ProblemDetailResponse"];
         };
     };
     getDeletedBundles: {
@@ -2299,6 +2805,13 @@ export interface operations {
                     "*/*": components["schemas"]["BundleListResponse"];
                 };
             };
+            400: components["responses"]["ProblemDetailResponse"];
+            401: components["responses"]["ProblemDetailResponse"];
+            403: components["responses"]["ProblemDetailResponse"];
+            404: components["responses"]["ProblemDetailResponse"];
+            409: components["responses"]["ProblemDetailResponse"];
+            422: components["responses"]["ProblemDetailResponse"];
+            500: components["responses"]["ProblemDetailResponse"];
         };
     };
     getDashboard: {
@@ -2319,6 +2832,72 @@ export interface operations {
                     "*/*": components["schemas"]["AdminDashboardResponse"];
                 };
             };
+            400: components["responses"]["ProblemDetailResponse"];
+            401: components["responses"]["ProblemDetailResponse"];
+            403: components["responses"]["ProblemDetailResponse"];
+            404: components["responses"]["ProblemDetailResponse"];
+            409: components["responses"]["ProblemDetailResponse"];
+            422: components["responses"]["ProblemDetailResponse"];
+            500: components["responses"]["ProblemDetailResponse"];
+        };
+    };
+    deleteAction: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                sessionId: string;
+                actionId: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["InspectionSessionResponse"];
+                };
+            };
+            400: components["responses"]["ProblemDetailResponse"];
+            401: components["responses"]["ProblemDetailResponse"];
+            403: components["responses"]["ProblemDetailResponse"];
+            404: components["responses"]["ProblemDetailResponse"];
+            409: components["responses"]["ProblemDetailResponse"];
+            422: components["responses"]["ProblemDetailResponse"];
+            500: components["responses"]["ProblemDetailResponse"];
+        };
+    };
+    resendInspectionNotification: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                sessionId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["InspectionSessionResponse"];
+                };
+            };
+            400: components["responses"]["ProblemDetailResponse"];
+            401: components["responses"]["ProblemDetailResponse"];
+            403: components["responses"]["ProblemDetailResponse"];
+            404: components["responses"]["ProblemDetailResponse"];
+            409: components["responses"]["ProblemDetailResponse"];
+            422: components["responses"]["ProblemDetailResponse"];
+            500: components["responses"]["ProblemDetailResponse"];
         };
     };
 }

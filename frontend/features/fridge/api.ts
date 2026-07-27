@@ -19,13 +19,11 @@ import type { ApiError } from "@/lib/api-errors"
 import type { components } from "@/lib/api-types"
 
 type RaisedError = Error & { status?: number; code?: string }
-type FridgeSlotDto = components["schemas"]["FridgeSlot"]
+type FridgeSlotDto = components["schemas"]["FridgeSlotResponse"]
 
 export type SlotFetchOptions = {
-  floor?: number | null
   page?: number
   size?: number
-  view?: string
 }
 
 function raiseFridgeError(error: ApiError | undefined, fallbackMessage: string): never {
@@ -39,13 +37,9 @@ function raiseFridgeError(error: ApiError | undefined, fallbackMessage: string):
 
 export async function fetchFridgeSlots(options: SlotFetchOptions = {}): Promise<Slot[]> {
   const search = new URLSearchParams()
-  search.set("view", options.view ?? "full")
   search.set("page", String(options.page ?? 0))
   const normalizedSize = Math.min(Math.max(options.size ?? 200, 1), 200)
   search.set("size", String(normalizedSize))
-  if (typeof options.floor === "number" && Number.isFinite(options.floor)) {
-    search.set("floor", String(options.floor))
-  }
   const { data, error } = await safeApiCall<FridgeSlotListResponseDto>(`/fridge/slots?${search.toString()}`, {
     method: "GET",
   })

@@ -110,7 +110,7 @@ Feature Inventory의 `스티커 번호`는 Rebuild 계약의 `라벨 번호(labe
 
 | ID | Scope | Status | Policy | Evidence / Notes |
 | --- | --- | --- | --- | --- |
-| INV-001 | MVP | `Confirmed` | 사용자는 자신에게 배정된 냉장고 데이터만 접근한다. 관리자 범위는 별도로 정의한다. | Feature Inventory와 MVP 합의 |
+| INV-001 | MVP | `Confirmed` | 거주자는 현재 거주 호실에 배정된 냉장고 데이터에 접근한다. 관리자와 냉장고 담당자의 범위는 별도로 정의한다. | Feature Inventory의 배정 칸 제한과 2026-07-26 호실 단위 배정 합의 |
 | INV-002 | MVP | `Confirmed` | 포장과 물품의 수정·삭제에는 소유권 검증이 필요하다. | Feature Inventory와 실제 UI 흐름 |
 | INV-003 | MVP | `Confirmed` | 포장 메모는 작성자만 열람할 수 있다. 관리자의 열람 여부는 별도 정책으로 확정한다. | Feature Inventory |
 | INV-004 | MVP | `Confirmed` | 검사로 잠긴 대상은 일반 사용자가 수정하거나 삭제할 수 없다. | Feature Inventory와 MVP 합의 |
@@ -118,8 +118,8 @@ Feature Inventory의 `스티커 번호`는 Rebuild 계약의 `라벨 번호(labe
 | INV-006 | MVP | `Confirmed` | 현재 UI의 포장 등록은 물품을 최소 1개 요구한다. 백엔드도 빈 포장 생성을 허용하지 않는다. | 실제 프론트 폼 검증과 사용자 흐름 |
 | INV-007 | MVP | `Review Required` | 목록 검색·필터·통계를 서버에서 수행할 범위와 페이지 크기를 확정해야 한다. | 현재 프론트는 최대 200건을 받아 일부 처리를 클라이언트에서 수행 |
 | INV-008 | MVP | `Review Required` | 삭제 데이터의 보존 기간과 관리자 강제 삭제가 논리 삭제인지 물리 삭제인지 확정해야 한다. | 원본 문서와 MVP 관리자 범위의 세부 의미 미확정 |
-| INV-009 | MVP | `Confirmed` | Slot 조회 범위는 거주자의 현재 배정 Slot과 냉장고 담당자에게 활성 관리 배정된 Slot의 합집합이며, 관리자는 전체 Slot을 조회한다. 층 필터는 이 범위를 넓히지 않는다. | Slot Task와 Slot 단위 관리 권한 합의 |
-| INV-010 | MVP | `Confirmed` | Slot 조회의 잘못된 `view`, 음수 `page`, 범위를 벗어난 `size`는 fallback이나 clamp 없이 `400`으로 거부한다. | 명시적 입력 검증으로 확정 |
+| INV-009 | MVP | `Confirmed` | 일반 거주자의 Slot 조회 범위는 현재 거주 호실에 활성 배정된 Slot이다. 첫 `GET /fridge/slots` Task는 이 일반 거주자 범위만 지원한다. | 호실 단위 배정과 첫 수직 슬라이스 범위를 2026-07-27 사용자 확인 |
+| INV-010 | MVP | `Confirmed` | Slot 조회의 음수 `page`와 범위를 벗어난 `size`는 fallback이나 clamp 없이 `400`으로 거부한다. | 명시적 입력 검증으로 확정 |
 | INV-011 | MVP | `Confirmed` | Slot의 `occupiedCount`는 소프트 삭제되지 않은 활성 포장 수다. | Slot Task 확정. `displayName` 정책은 `INV-019`로 분리했다. |
 | INV-012 | MVP | `Confirmed` | Slot의 영속 식별자는 `slotId`이며 배정, 포장과 검사 관계는 이 ID를 사용한다. | Feature Inventory의 칸 ID 저장 정책. 2026-07-26 합의로 표시·정렬용 `slotIndex` 전제를 제거했다. |
 | INV-013 | MVP | `Confirmed` | 포장 라벨 번호는 Slot별로 발급하며 포장 라벨은 `(slotId, labelNumber)` 조합으로 식별한다. | Feature Inventory의 “칸 ID와 3자리 숫자 저장” 및 “칸별 라벨 시퀀스” |
@@ -132,25 +132,53 @@ Feature Inventory의 `스티커 번호`는 Rebuild 계약의 `라벨 번호(labe
 | INV-020 | MVP | `Confirmed` | Slot은 `fridgeId`로 하나의 물리적 냉장고에 소속되며, 하나의 냉장고는 냉장·냉동 Slot을 함께 소유할 수 있다. | 2026-07-26 사용자 합의 |
 | INV-021 | MVP | `Confirmed` | 명시적인 표시 순서 요구가 생기기 전까지 `slotIndex`, `position`, `displayOrder`와 파생 `slotLetter`를 모델·DB·공개 Slot 계약에 두지 않는다. | 불필요한 순서·표시 데이터 제거 합의 |
 | INV-022 | MVP | `Review Required` | `displayName` 변경이 기존 실물 표기와 검사·감사 이력에 미치는 영향, 이름 정규화와 소프트 삭제 후 재사용 기준을 확정해야 한다. | 표시명 변경 운영 정책 미정 |
-| INV-023 | MVP | `Confirmed` | 거주자는 현재 배정(`releasedAt IS NULL`)된 Slot을 운영 상태와 관계없이 조회한다. `RETIRED` Slot도 숨기지 않고 상태를 반환하되 신규 포장 등록, 신규 배정과 일반 변경에는 사용할 수 없다. 퇴역과 기존 배정 해제는 별도 절차다. | 퇴역으로 기존 포장과 배정이 사라진 것처럼 보이지 않도록 한 2026-07-26 합의 |
+| INV-023 | MVP | `Review Required` | 거주자의 Slot 조회는 현재 거주 관계와 현재 호실의 활성 Slot 배정을 기준으로 한다. `RETIRED` Slot의 조회·신규 등록 제한과 기존 호실 배정 해제 절차는 Slot 운영 상태 수직 슬라이스에서 다시 확정한다. | 호실 단위 배정 전환으로 기존 사용자 직접 배정의 생명주기 규칙 재검토 필요 |
 | INV-024 | MVP | `Confirmed` | Phase 1 Slot 조회에는 검사 잠금 상태를 공개하지 않는다. `slotStatus`, `locked`, `lockedUntil`은 검사 잠금의 원천·만료·상태 전이를 확정한 뒤 검사 수직 슬라이스에서 계약한다. | 미구현 검사 기능을 고정값으로 노출하지 않기 위한 MVP 경계 |
+| INV-025 | MVP | `Confirmed` | 냉장고 Slot의 기본 이용 배정 주체는 사용자가 아니라 호실이다. 거주자는 현재 유효한 거주 관계를 통해 현재 호실에 활성 배정된 냉장·냉동 Slot을 이용한다. 사용자별 예외 Slot 배정은 실제 요구가 확인되기 전까지 도입하지 않는다. | 호실 구간을 공통 칸에 배분하는 운영 방식과 2026-07-26 사용자 재확인 |
+| INV-026 | MVP | `Confirmed` | 기본 냉장 3칸·냉동 1칸은 물리적 냉장고 한 대의 고정 구성이 아니라 층별 호실을 Slot에 배분할 때 사용하는 현재 운영 정책이다. 같은 층의 호실을 순서대로 균등 구간화하며, 24개 호실이면 냉장 Slot 하나당 8개 호실, 냉동 Slot 하나는 24개 호실이 공동 사용한다. 나누어떨어지지 않는 경우와 관리자 재배분 규칙은 별도 검토한다. | Feature Inventory 배분 정책의 의미를 2026-07-26 사용자 설명으로 명확화 |
+| INV-027 | MVP | `Confirmed` | 방 이동으로 새 호실의 Slot 이용 범위가 적용되기 전에, 사용자가 이전 호실을 통해서만 접근할 수 있던 Slot의 기존 포장을 정리해야 한다. 구체적인 정리 확인·이동 처리와 실패 응답은 거주 이동 또는 Bundle 수직 슬라이스에서 계약한다. | 방 이동 직후 기존 물품이 접근 불가능해지는 문제를 방지하기 위한 2026-07-26 합의 |
+| INV-028 | MVP | `Review Required` | 냉장고 담당자의 관리 Slot과 관리자의 전체 Slot을 일반 거주자용 `GET /fridge/slots`에 함께 반환할지, 역할별 별도 조회 계약을 둘지는 후속 Task에서 확정한다. | 첫 Slot Task에서 다중 역할과 결과 합집합을 제외한 2026-07-27 범위 결정 |
+| INV-029 | MVP | `Confirmed` | 일반 거주자용 `GET /fridge/slots`는 `floor` Query Parameter를 제공하지 않는다. 조회 층은 현재 거주 호실과 그 호실의 Slot 배정으로 이미 제한된다. 층별 운영 조회가 필요하면 관리자·냉장고 담당자용 계약에서 별도로 검토한다. | 중복 입력과 권한 범위 혼동을 제거한 2026-07-27 사용자 확인 |
+| INV-030 | MVP | `Confirmed` | 일반 거주자용 `GET /fridge/slots`는 `view` Query Parameter를 제공하지 않는다. 지원 표현이 하나뿐인 `view=full`은 선택 의미가 없으며, 다른 조회 형태가 필요하면 구체 요구와 응답 계약을 별도로 검토한다. | 사용되지 않는 확장 파라미터를 제거한 2026-07-27 사용자 확인 |
 
-### 5.3 인증과 사용자
+### 5.3 거주 구역과 공용시설
+
+층별 성별 구성과 시설 이용 대상은 현재 Rebuild의 업무 정책으로 관리한다.
+성별·층·호실을 어떤 컬럼과 관계로 저장할지는 관련 수직 슬라이스에서 별도로
+결정하며, 아래 정책만으로 User 필드나 권한 계산 방식을 확정하지 않는다.
 
 | ID | Scope | Status | Policy | Evidence / Notes |
 | --- | --- | --- | --- | --- |
-| AUTH-001 | MVP | `Confirmed` | Spring Security 기반 서버 세션 인증을 사용한다. 브라우저는 `HttpOnly`, `SameSite=Lax` 세션 쿠키를 전달하고 배포 HTTPS 환경에서는 `Secure`를 적용한다. Access/Refresh Token과 `deviceId`는 MVP 인증 계약에서 사용하지 않는다. | 2026-07-26 사용자 합의. 단일 웹 애플리케이션과 단일 백엔드 인스턴스에 필요한 가장 단순한 인증 방식을 선택했다. |
+| RES-001 | MVP | `Confirmed` | 하나의 거주 층에는 남성과 여성이 함께 거주하지 않는다. 각 거주 층은 한 성별의 생활 구역으로 운영한다. | 2026-07-26 사용자 확인 |
+| RES-002 | MVP | `Confirmed` | 현재 운영 기준은 2층 남성, 3·4·5층 여성 거주다. 운영 기준이 실제로 변경되면 코드 상수에 의존하지 않고 이 정책과 관련 설정·데이터를 함께 갱신한다. | Feature Inventory와 2026-07-26 사용자 재확인 |
+| FAC-001 | MVP | `Confirmed` | 다목적실과 도서관은 모든 활성 거주자가 이용할 수 있다. 관리자 등 비거주 계정의 일반 이용 권한은 별도로 정의한다. | 2026-07-26 사용자 확인 |
+| LAUN-001 | MVP | `Confirmed` | 일반 세탁실은 남성용과 여성용으로 구분하며, 활성 거주자는 자신의 성별에 허용된 세탁실과 그 안의 세탁기·건조기를 이용할 수 있다. 성별과 현재 거주 층 중 무엇을 권한 판정의 원천으로 저장할지는 세탁실 수직 슬라이스에서 결정한다. | 2026-07-26 사용자 확인 |
+| LAUN-002 | MVP | `Confirmed` | 공용 건조기는 성별 구분 없이 모든 활성 거주자가 이용할 수 있다. | 2026-07-26 사용자 확인 |
+| FAC-002 | MVP | `Confirmed` | 냉장고는 공용시설과 달리 현재 호실에 배정된 Slot만 이용한다. 구체 배정과 방 이동 정책은 `INV-025`~`INV-027`을 따른다. | 2026-07-26 사용자 확인과 냉장고 배정 결정 |
+
+### 5.4 인증과 사용자
+
+| ID | Scope | Status | Policy | Evidence / Notes |
+| --- | --- | --- | --- | --- |
+| AUTH-001 | MVP | `Confirmed` | Spring Security 기반 서버 세션 인증만 사용한다. 브라우저는 `HttpOnly`, `SameSite=Lax` 세션 쿠키를 전달하고 배포 HTTPS 환경에서는 `Secure`를 적용한다. Bearer Access Token, Refresh Token과 `deviceId` 기반 인증은 MVP에서 사용하지 않고 Post-MVP 후보로 분리한다. | 2026-07-26 서버 세션 선택, 2026-07-27 토큰 인증을 후속 범위로 분리하기로 사용자 합의. 처음부터 세션 인증 경계를 학습하고 MVP의 이중 인증 복잡성을 피한다. |
 | AUTH-002 | MVP | `Review Required` | 온라인 회원가입을 제공할지, 관리자가 계정을 발급할지 확정해야 한다. | Feature Inventory와 현재 비활성 회원가입 UI가 충돌 |
 | AUTH-003 | MVP | `Confirmed` | 비활성화된 사용자는 로그인할 수 없다. | Feature Inventory |
 | AUTH-004 | MVP | `Confirmed` | 관리자 계정 권한, 거주 자격과 냉장고 관리 업무를 분리하고 각 API에서 서버가 검증한다. 냉장고 담당자는 거주자에게 추가되는 기간성 업무다. | Feature Inventory의 층별장 역할을 Rebuild 업무 배정으로 재설계 |
-| AUTH-005 | MVP | `Review Required` | 로그아웃은 세션 무효화로 처리한다. idle timeout, 동시 로그인 제한과 다중 기기 정책의 세부값은 인증 구현 Task에서 확정한다. Refresh Token API는 세션 인증 MVP에서 사용하지 않는다. | 세션 인증 선택에 따른 범위 재분류 |
+| AUTH-005 | MVP | `Review Required` | 로그아웃은 세션 무효화로 처리한다. idle timeout, 동시 로그인 제한과 다중 기기 정책의 세부값은 인증 구현 Task에서 확정한다. Refresh Token API는 MVP 공개 계약에서 제외하고 Post-MVP 토큰 인증 검토 때 별도 계약한다. | 세션 인증 선택과 2026-07-27 토큰 인증 후속 범위 분리에 따른 재분류 |
+| AUTH-011 | Post-MVP | `Review Required` | Bearer Access Token, Refresh Token과 `deviceId` 기반 인증은 향후 지원 후보로 둔다. 지원 필요성, 세션과의 병행 여부, 토큰 저장·회전·폐기와 기기 식별 목적을 다시 검토한 뒤 별도 계약으로 확정한다. | 2026-07-27 사용자 합의. “다음에 지원”은 현재 OpenAPI의 토큰 계약을 자동 확정하거나 MVP에서 구현한다는 의미가 아니다. |
+| AUTH-012 | MVP | `Confirmed` | 로그인 성공은 한 번의 `POST /auth/login` 호출에서 서버 세션을 생성하고 `200 OK`로 `UserProfileResponse`를 반환한다. 세션 식별자는 응답 본문에 넣지 않고 `HttpOnly` 쿠키로만 전달하며 Access/Refresh Token은 반환하지 않는다. | 2026-07-27 사용자 합의. 로그인 직후 별도 프로필 조회 없이 화면 상태를 구성하면서 토큰 노출과 이중 인증을 피한다. |
+| AUTH-013 | MVP | `Confirmed` | 로그인 화면 진입 시 `GET /csrf`로 토큰을 미리 발급받아 프론트 메모리에만 보관한다. 로그인 제출은 준비된 토큰을 서버가 응답한 헤더 이름으로 전달하여 `POST /auth/login` 한 번만 호출한다. 토큰 준비 전에는 제출하지 않으며 브라우저 영속 저장소에 보관하지 않는다. | 2026-07-27 사용자 합의. 로그인 버튼 동작을 단일 API 호출로 유지하면서 로그인 요청도 CSRF로 보호한다. |
+| AUTH-014 | MVP | `Confirmed` | 존재하지 않는 아이디와 잘못된 비밀번호는 외부 응답에서 구분하지 않고 모두 `401 Unauthorized`, 오류 코드 `AUTH_INVALID_CREDENTIALS`, 안내 문구 `아이디 또는 비밀번호가 올바르지 않습니다.`를 반환한다. 실제 실패 원인은 내부 보안 로그에서만 구분할 수 있다. | 2026-07-27 사용자 합의. 계정 존재 여부 추측을 막고 프론트 오류 처리를 안정화한다. |
+| AUTH-015 | MVP | `Confirmed` | 자격 증명이 올바르지만 계정이 비활성 상태이면 `403 Forbidden`, 오류 코드 `ACCOUNT_INACTIVE`, 안내 문구 `비활성화된 계정입니다. 관리자에게 문의해 주세요.`를 반환한다. 자격 증명이 틀리면 비활성 여부를 밝히지 않고 `AUTH-014`를 적용하며, 비활성 사유와 내부 관리자 메모는 응답에 노출하지 않는다. | 2026-07-27 사용자 합의. 관리자 발급형 기숙사 서비스에서 사용자가 비밀번호 오류로 오해하지 않고 운영자에게 문의할 수 있게 한다. |
+| AUTH-016 | MVP | `Confirmed` | CSRF 토큰이 누락·불일치·만료된 요청은 원인을 외부에서 세분화하지 않고 `403 Forbidden`, 오류 코드 `CSRF_INVALID`, 안내 문구 `보안 토큰이 유효하지 않습니다. 페이지를 새로고침한 뒤 다시 시도해 주세요.`를 반환한다. 프론트는 기존 토큰을 폐기하고 새 토큰 준비가 끝날 때까지 재제출을 막는다. | 2026-07-27 사용자 합의. 일반 권한 부족과 CSRF 실패를 안정적으로 구분하면서 검증 세부정보는 노출하지 않는다. |
+| AUTH-017 | MVP | `Confirmed` | 로그아웃은 요청 본문 없는 `POST /auth/logout`으로 현재 서버 세션을 무효화하고 세션 쿠키를 만료시킨다. 성공은 `204 No Content`이며 이미 세션이 없거나 만료됐어도 `204`를 반환한다. CSRF 검증 실패만 `AUTH-016`에 따라 `403 CSRF_INVALID`로 반환한다. | 2026-07-27 사용자 합의. refresh token 없이 세션 로그아웃을 처리하고 반복 요청의 최종 상태를 동일하게 유지한다. |
 | AUTH-006 | MVP | `Confirmed` | 냉장고 관리 권한은 `SlotManagerAssignment`로 Slot 단위 저장한다. 냉장고 담당자 지정 대상은 활성 거주자여야 하고 기존 거주자 권한을 유지한다. 거주 층과 관리 Slot의 층은 영구적인 DB 제약으로 묶지 않는다. | 일부 Slot·다른 층 담당 확장과 명시적 권한 이력을 위한 2026-07-26 사용자 합의 |
 | AUTH-009 | MVP | `Confirmed` | 관리자 UI는 층 전체와 개별 Slot 선택을 제공한다. 층 전체 선택은 선택 시점의 해당 층 활성 Slot에 관리 배정을 일괄 생성하는 편의 기능이며, 이후 추가되는 Slot을 자동 포함하지 않는다. | 백엔드 권한 단위를 Slot으로 통일한 MVP 결정 |
 | AUTH-010 | MVP | `Confirmed` | 관리자는 거주자가 아니며 거주자 자격을 상속하지 않는다. 계정의 `ADMIN` 권한으로 전체 조회와 별도 운영 행위를 수행한다. 일반 거주자 물품 등록 API를 관리자의 소유물 생성에 사용하지 않는다. | 소유자와 운영 행위자를 분리한 2026-07-26 사용자 합의 |
 | AUTH-007 | MVP | `Confirmed` | 보호 API에서 인증 주체를 복원하지 못하면 `401`, 인증됐지만 API를 호출할 역할·업무 자격이 없으면 `403`을 반환한다. 권한 범위 안에 조회할 데이터가 없는 경우는 `200` 빈 목록이다. | Slot 조회 오류 의미 합의 |
 | AUTH-008 | MVP | `Confirmed` | 세션 쿠키를 자동 전달하는 브라우저 요청은 CSRF 보호를 유지한다. SPA는 발급받은 CSRF 토큰을 변경 요청 헤더에 전달하며 로그인과 로그아웃도 CSRF 검증 대상이다. | Spring Security 세션 인증의 보안 경계 |
 
-### 5.4 검사
+### 5.5 검사
 
 | ID | Scope | Status | Policy | Evidence / Notes |
 | --- | --- | --- | --- | --- |
@@ -162,7 +190,7 @@ Feature Inventory의 `스티커 번호`는 Rebuild 계약의 `라벨 번호(labe
 | INSP-006 | Post-MVP | `Post-MVP` | 여러 냉장고 담당자의 검사 합류와 SSE 실시간 동기화는 Release 1에서 제외한다. | Feature Inventory의 다중 층별장 확장 항목 |
 | INSP-007 | Post-MVP | `Post-MVP` | 제출 결과 정정과 벌점 재계산은 Release 1에서 제외한다. | MVP 범위 합의 |
 
-### 5.5 관리자와 알림
+### 5.6 관리자와 알림
 
 | ID | Scope | Status | Policy | Evidence / Notes |
 | --- | --- | --- | --- | --- |
@@ -181,7 +209,8 @@ Feature Inventory의 `스티커 번호`는 Rebuild 계약의 `라벨 번호(labe
 - OpenAPI의 다수 응답이 구체적인 미디어 타입 대신 `*/*`로 정의되어 있다.
 - 일부 요청·응답 스키마의 필수 필드와 오류 계약이 충분히 명시되지 않았다.
 - 현재 프론트는 Bearer access token, refresh token, `deviceId`를 사용하므로
-  연동 시 확정된 세션 쿠키와 CSRF 헤더 방식으로 교체해야 한다.
+  MVP 연동 시 세션 쿠키와 CSRF 헤더 방식으로 교체해야 한다. 제거되는 토큰
+  인증 코드는 `AUTH-011`의 Post-MVP 계약이 확정되기 전 재사용하지 않는다.
 - 현재 회원가입 화면은 비활성 안내이며 실제 가입 요청을 보내지 않는다.
 - OpenAPI의 Bundle·Inspection·Reallocation·Issue 관련 기존 스키마에는 제거하기로
   한 `slotIndex`, `slotLetter` 또는 `slotLabel` 전제가 남아 있다. 각 수직

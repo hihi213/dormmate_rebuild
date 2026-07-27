@@ -2,9 +2,9 @@ import type { components } from "@/lib/api-types"
 
 export type NotificationStateFilter = "all" | "unread" | "read"
 
-export type NotificationDto = components["schemas"]["NotificationItem"]
+export type NotificationDto = components["schemas"]["NotificationItemResponse"]
 export type NotificationListResponseDto = components["schemas"]["NotificationListResponse"]
-export type NotificationPreferenceDto = components["schemas"]["NotificationPreferenceItem"]
+export type NotificationPreferenceDto = components["schemas"]["NotificationPreferenceItemResponse"]
 export type NotificationPreferenceResponseDto = components["schemas"]["NotificationPreferenceResponse"]
 export type UpdateNotificationPreferenceRequestDto = components["schemas"]["UpdateNotificationPreferenceRequest"]
 

@@ -55,14 +55,11 @@ export default function AddItemDialog({
   const restrictSlotViewToOwnership = !isAdmin
 
   const isSlotSelectable = useCallback(
-    (slot: Slot) => slot.resourceStatus === "ACTIVE" && !slot.locked,
+    (slot: Slot) => slot.resourceStatus === "ACTIVE",
     [],
   )
 
   const describeDisabledSlot = useCallback((slot: Slot) => {
-    if (slot.locked) {
-      return "검사 중이라 선택할 수 없습니다."
-    }
     switch (slot.resourceStatus) {
       case "SUSPENDED":
         return "관리자 점검으로 일시 중지된 칸입니다."
