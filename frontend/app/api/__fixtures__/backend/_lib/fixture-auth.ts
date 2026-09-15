@@ -14,7 +14,7 @@ const ROLE_TO_PROFILE: Record<
     isAdmin: boolean
     primaryRoom?: {
       roomId: string
-      floor: number
+      floorNo: number
       roomNumber: string
       personalNo: number
       assignedAt: string
@@ -30,7 +30,7 @@ const ROLE_TO_PROFILE: Record<
     isAdmin: false,
     primaryRoom: {
       roomId: "room-201",
-      floor: 2,
+      floorNo: 2,
       roomNumber: "201",
       personalNo: 1,
       assignedAt: new Date().toISOString(),
@@ -45,7 +45,7 @@ const ROLE_TO_PROFILE: Record<
     isAdmin: false,
     primaryRoom: {
       roomId: "room-301",
-      floor: 3,
+      floorNo: 3,
       roomNumber: "301",
       personalNo: 1,
       assignedAt: new Date().toISOString(),
@@ -105,9 +105,10 @@ export function buildUserProfile(role: FixtureRole) {
     loginId: profile.loginId,
     displayName: profile.displayName,
     email: `${profile.loginId}@fixture.invalid`,
-    roles: profile.roles,
+    accountAuthorities: profile.isAdmin ? ["ADMIN"] : [],
     primaryRoom: profile.primaryRoom ?? null,
-    isFloorManager: profile.isFloorManager,
+    isResident: profile.primaryRoom != null,
+    isFridgeManager: profile.isFloorManager,
     isAdmin: profile.isAdmin,
     createdAt: timestamp,
     updatedAt: timestamp,

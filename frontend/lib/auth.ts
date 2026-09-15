@@ -4,7 +4,7 @@ export type UserRole = "RESIDENT" | "FLOOR_MANAGER" | "ADMIN"
 
 export type RoomDetails = {
   roomId?: string
-  floor?: number
+  floorNo?: number
   roomNumber?: string
   personalNo?: number
   floorCode?: string
@@ -23,7 +23,7 @@ export type AuthUser = {
 
 type RoomAssignment = {
   roomId: string
-  floor: number
+  floorNo: number
   roomNumber: string
   personalNo: number
   assignedAt: string
@@ -83,7 +83,7 @@ function mapUserProfile(profile: UserProfile): AuthUser {
   const roomDetails = profile.primaryRoom
     ? {
         roomId: profile.primaryRoom.roomId,
-        floor: profile.primaryRoom.floor,
+        floorNo: profile.primaryRoom.floorNo,
         roomNumber: profile.primaryRoom.roomNumber,
         personalNo: profile.primaryRoom.personalNo,
         floorCode: profile.primaryRoom.floorCode,
@@ -109,7 +109,7 @@ function formatRoom(room?: RoomAssignment | null): string | undefined {
   if (!room) return undefined
   const base = room.roomNumber ? `${room.roomNumber}호` : ""
   const personal = room.personalNo ? ` ${room.personalNo}번` : ""
-  return `${room.floor}층 ${base}${personal}`.trim()
+  return `${room.floorNo}층 ${base}${personal}`.trim()
 }
 
 function readUser(): AuthUser | null {

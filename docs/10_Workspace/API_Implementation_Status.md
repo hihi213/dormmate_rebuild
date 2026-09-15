@@ -11,7 +11,6 @@
 ### 범위
 
 - `MVP`: Release 1 대상
-- `Conditional MVP`: 선행 결정에 따라 MVP 포함 여부 결정
 - `Post-MVP`: Release 1 이후
 
 ### 진행
@@ -27,7 +26,7 @@
 
 | Method | Path | Scope | Status | Policy / Blocker | Task |
 | --- | --- | --- | --- | --- | --- |
-| GET | `/fridge/slots` | MVP | In Progress | `INV-001`, `INV-009`~`INV-012`, `INV-019`~`INV-021`, `INV-023`, `INV-024`, `AUTH-001`, `AUTH-006`~`AUTH-009`; Slot 영속성 세부 제약과 응답 enum 확정 필요, `INV-022`는 구현 비차단 | [Slot 조회 및 검증](./Tasks/Task_Slot%20조회%20및%20검증.md) |
+| GET | `/fridge/slots` | MVP | Review Required | `INV-001`, `INV-009`~`INV-012`, `INV-019`~`INV-021`, `INV-023`, `INV-024`, `AUTH-001`, `AUTH-006`~`AUTH-009`; Slot 영속성 세부 제약·응답 enum 및 RETIRED 정책·계약 차이 확인 필요, `INV-022`는 구현 비차단 | [Slot 조회 및 검증](./Tasks/Task_Slot%20조회%20및%20검증.md) |
 | GET | `/fridge/bundles` | MVP | Review Required | `INV-007`: 검색·필터·페이징 범위 | - |
 | POST | `/fridge/bundles` | MVP | Review Required | `INV-001`~`INV-006`, `INV-013`, `INV-014` | - |
 | GET | `/fridge/bundles/{bundleId}` | MVP | Not Started | `INV-001`~`INV-005` | - |
@@ -36,6 +35,10 @@
 | POST | `/fridge/bundles/{bundleId}/items` | MVP | Not Started | `INV-002`, `INV-004` | - |
 | PATCH | `/fridge/items/{itemId}` | MVP | Not Started | `INV-002`, `INV-004` | - |
 | DELETE | `/fridge/items/{itemId}` | MVP | Review Required | `INV-005`, `INV-008` | - |
+
+정책 참조는 관련 규칙이며 모두 현재 차단 조건이라는 뜻은 아니다. `INV-004`의
+검사 잠금과 `INV-008`의 관리자 강제 삭제 세부사항은 해당 후속 기능에서 적용한다.
+1차 일반 삭제에 필요한 계약·정합성은 현재 Task에서 검토한다.
 
 ### 인증과 사용자
 
@@ -50,25 +53,30 @@
 기존 `/auth/refresh`는 세션 인증 MVP에서 사용하지 않는다. 기존 OpenAPI 계약의
 경로에는 `Post-MVP` 후보임을 표시했으며 `AUTH-011` 검토 전 구현하지 않는다.
 
+## 이후 확장
+
+시작 조건과 확장 근거는 [README](../../README.md#이후-확장-원칙)를 따른다.
+기존 기능과 계약을 보존하며 적용 범위와 정책·계약의 확정 상태를 구분한다.
+
 ### 검사
 
 | Method | Path | Scope | Status | Policy / Blocker |
 | --- | --- | --- | --- | --- |
-| POST | `/fridge/inspections` | MVP | Review Required | `INSP-001`, `INSP-004`, `INSP-005` |
-| GET | `/fridge/inspections/{sessionId}` | MVP | Review Required | 조회 권한과 세션 상태 계약 |
-| POST | `/fridge/inspections/{sessionId}/actions` | MVP | Review Required | `INSP-001`, 조치 입력 계약 |
-| POST | `/fridge/inspections/{sessionId}/submit` | MVP | Review Required | `INSP-002`~`INSP-005` |
-| GET | `/fridge/inspections` | MVP | Review Required | 거주자 이력·관리자 조회 범위 |
+| POST | `/fridge/inspections` | Post-MVP | Review Required | `INSP-001`, `INSP-004`, `INSP-005` |
+| GET | `/fridge/inspections/{sessionId}` | Post-MVP | Review Required | 조회 권한과 세션 상태 계약 |
+| POST | `/fridge/inspections/{sessionId}/actions` | Post-MVP | Review Required | `INSP-001`, 조치 입력 계약 |
+| POST | `/fridge/inspections/{sessionId}/submit` | Post-MVP | Review Required | `INSP-002`~`INSP-005` |
+| GET | `/fridge/inspections` | Post-MVP | Review Required | 거주자 이력·관리자 조회 범위 |
 
-일정 관리, 정정, 알림 재발송과 SSE는 MVP 구현 현황에 포함하지 않는다.
+일정 관리, 정정, 알림 재발송과 SSE도 후속으로 보존하며 해당 Task에서 범위를 정한다.
 
 ### 최소 관리자
 
 | Method | Path | Scope | Status | Policy / Blocker |
 | --- | --- | --- | --- | --- |
-| GET | `/admin/users` | MVP | Review Required | `ADM-001`, `ADM-002` |
-| GET | `/admin/fridge/issues` | MVP | Review Required | 물품 조회 범위와 응답 계약 |
-| PATCH | `/admin/users/{userId}/status` | Conditional MVP | Review Required | 상태 변경 범위와 감사 정책 |
+| GET | `/admin/users` | Post-MVP | Review Required | `ADM-001`, `ADM-002` |
+| GET | `/admin/fridge/issues` | Post-MVP | Review Required | 물품 조회 범위와 응답 계약 |
+| PATCH | `/admin/users/{userId}/status` | Post-MVP | Review Required | 상태 변경 범위와 감사 정책 |
 
 현재 OpenAPI에 최소 관리자 검사 이력 전용 API가 명확하지 않다. 기존 `/fridge/inspections`로 해결할지 계약 변경이 필요한지 Phase 4에서 결정한다.
 
@@ -93,5 +101,5 @@
 - OpenAPI 계약 일치
 - 권한과 주요 실패 흐름 검증
 - 필요한 DB 제약과 동시성 위험 검토
-- 사용자가 요청한 경우 프론트 연동 완료
+- 확정 계약을 사용하는 필수 프론트 연동·검증 완료 (AGENTS.md의 경계 적용)
 - 관련 Phase·Task·정책·결정 문서 갱신

@@ -2,8 +2,11 @@
 
 > Status: Resolved
 > 확인일: 2026-07-26
+> `Resolved`는 당시의 테스트 DB 기준선 부재에 대한 해결 기록이다.
+> 최근 Docker 환경 탐색 실패는 [Phase 0의 재현 기록](../🚩%20Phase%200%20개발%20기준선.md#최근-재현-확인--2026-09-14)을
+> 참조한다. 당시 해결을 취소하거나 현재 전체 테스트 통과로 해석하지 않는다.
 
-## 현상
+## 당시 현상
 
 백엔드 스켈레톤에서 다음 명령을 실행하면 두 테스트가 실패한다.
 
@@ -20,7 +23,7 @@ cd backend
 공통 원인은 테스트 ApplicationContext가 사용할 DataSource에 연결하지 못해
 Hibernate가 Dialect를 결정하지 못하는 것이다.
 
-## 현재 구성
+## 당시 구성
 
 - 기본 설정은 로컬 PostgreSQL `jdbc:postgresql://localhost:5432/dormmate_rebuild_db`를 사용한다.
 - 테스트 전용 설정이나 테스트용 DB 의존성이 없다.
@@ -28,7 +31,7 @@ Hibernate가 Dialect를 결정하지 못하는 것이다.
 
 ## 영향
 
-- 현재 `./gradlew test` 실패는 Slot 기능 변경으로 발생한 회귀가 아니다.
+- 당시 `./gradlew test` 실패는 Slot 기능 변경으로 발생한 회귀가 아니다.
 - 기준선을 복구하기 전에는 새 기능 테스트 실패와 기존 환경 실패를 구분하기 어렵다.
 - PostgreSQL 전용 제약과 쿼리를 검증할 재현 가능한 테스트 환경이 없다.
 
@@ -71,7 +74,7 @@ PostgreSQL Testcontainers로 통합 테스트 기준선을 만든다.
 - 이후 부분 Unique Index, 동시성 및 실행 계획 검증으로 확장할 수 있다.
 
 Controller Validation처럼 JPA가 필요 없는 테스트는 별도 테스트 슬라이스로
-분리해 불필요한 전체 Context와 DB 의존을 줄이는 것도 함께 검토한다.
+분리해 불필요한 전체 Context와 DB 의존을 줄였다. 적용 내역은 위 해결 기록을 따른다.
 
 ## 완료 조건
 
@@ -80,7 +83,7 @@ Controller Validation처럼 JPA가 필요 없는 테스트는 별도 테스트 �
 - 테스트가 실제 PostgreSQL 연결을 사용했는지 확인할 수 있다.
 - 테스트 실행 방법과 Docker 필요 조건을 README 또는 실행 문서에 기록한다.
 
-## 최종 결과
+## 당시 검증 결과
 
 - PostgreSQL 16 Testcontainer 연결 확인
 - `BackendApplicationTests.contextLoads()` 통과

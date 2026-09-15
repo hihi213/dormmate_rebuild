@@ -129,6 +129,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
+        /** @description Post-MVP 토큰 인증 후보 계약. MVP 세션 인증에서는 호출하거나 구현하지 않는다. */
         post: operations["refresh"];
         delete?: never;
         options?: never;
@@ -932,10 +933,14 @@ export interface components {
         };
         RoomAssignmentResponse: {
             /** Format: uuid */
-            roomId?: string;
-            /** Format: int32 */
-            floor?: number;
-            roomNumber?: string;
+            roomId: string;
+            /**
+             * Format: int32
+             * @description 호실 번호 문자열에서 파싱하지 않는 구조화된 층 번호
+             */
+            floorNo: number;
+            /** @description 사용자에게 표시하는 호실 표기. 층 판정이나 정렬을 위해 문자열을 파싱하지 않는다. */
+            roomNumber: string;
             /** Format: int32 */
             personalNo?: number;
             /** Format: date-time */

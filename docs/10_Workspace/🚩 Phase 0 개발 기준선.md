@@ -31,6 +31,17 @@ scope: MVP
 | Done | mise Node.js 22 환경에서 `npm ci`, 프론트 lint와 build 실행 |
 | Known issue | 별도 `tsc --noEmit`은 기존 프론트 타입 오류로 실패하며 Next build는 설정상 타입 검사와 lint를 생략 |
 
+## 최근 재현 확인 — 2026-09-14
+
+OrbStack이 중지된 상태에서는 `mise exec -- ./gradlew test --rerun-tasks`의
+컨텍스트 테스트가 Docker 환경을 찾지 못해 실패했다. OrbStack 시작 후 같은 명령을
+재실행해 PostgreSQL Testcontainer를 포함한 전체 테스트가 통과함을 확인했다.
+프론트 lint와 build도 Node.js 22 환경에서 통과했다. Dockerfile의 빌더와 런타임을
+프로젝트 기준인 Java 21로 통일했다. 다만 Next build는 설정상 타입 검사와 lint를
+생략하므로 별도 타입 검사 실패는 후속으로 해결해야 한다. 타입 오류는
+`Frontend_Integration_Baseline.md`의 타입 오류 처리 원칙에 따라 계약 비의존
+오류와 수직 슬라이스별 계약 연동 오류를 구분해 처리한다.
+
 ## 완료 조건
 
 - Docker가 실행되는 환경에서 `./gradlew test`가 통과한다.

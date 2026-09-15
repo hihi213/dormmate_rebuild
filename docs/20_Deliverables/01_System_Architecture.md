@@ -2,7 +2,7 @@
 
 > 현재 저장소에서 확인된 구성과 후속 학습 후보를 구분한다. 후보 기술을 현재 사용 중인 구성처럼 표시하지 않는다.
 
-## 1. Current Architecture
+## 1. 구성과 목표 연결
 
 ```mermaid
 flowchart LR
@@ -16,12 +16,13 @@ flowchart LR
 | Next.js | 기존 UI·UX와 API Client | Existing |
 | Spring Boot | Rebuild 대상 REST API | Skeleton / In Progress |
 | Spring Data JPA | 영속성 접근 | Existing |
-| PostgreSQL | 운영·로컬 데이터 저장 | Existing |
+| PostgreSQL | 로컬·테스트 DB, 배포 대상 저장소 | Local / Deployment planned |
 | Docker Compose | 로컬 실행 환경 | Existing |
 
-MVP 인증은 Spring Security 서버 세션과 CSRF 보호를 사용한다. 현재 프론트의
-Bearer access/refresh token과 `deviceId` 흐름은 확정 계약이 아니며, 사용자가
-연동을 요청할 때 세션 쿠키와 CSRF 헤더 방식으로 교체한다.
+위 연결도는 목표 통합 흐름이며 업무 API의 실제 연동 완료를 의미하지 않는다.
+MVP 인증은 Spring Security 서버 세션과 CSRF로 확정됐지만 백엔드는 구현 전이다.
+프론트 전환 상태는 [Frontend Integration Baseline](../10_Workspace/Frontend_Integration_Baseline.md),
+배포와 확장 범위는 [README](../../README.md)를 따른다.
 
 ## 2. Request Lifecycle
 
@@ -73,23 +74,15 @@ HTTP 요청
 | SSE | 여러 냉장고 담당자의 실시간 검사 합류를 구현 | 폴링 기반 MVP와 동시성 정책 검증 |
 | GitHub Actions | 로컬 검증 명령이 안정되고 반복 자동화가 필요 | 재현 가능한 테스트·lint·build 기준선 |
 
-## 5. Redis 학습 계획
+## 5. 기술 확장 원칙
 
-Redis는 Post-MVP 비교 실험으로 남긴다.
+[README의 이후 확장 원칙](../../README.md#이후-확장-원칙)을 따른다.
+Redis 비교는 필수 과제가 아니다. DB 방식의 한계나 구체적인 학습 목적이 확인되고
+사용자가 선택할 때만 별도 Task로 다룬다. Flyway와 CI는 1차 완료를 위해 준비할
+항목이지만 현재 적용됐다는 의미는 아니다.
 
-```text
-DB 제약과 트랜잭션
-→ 낙관적·비관적 락
-→ 동시 요청 테스트와 한계 측정
-→ Redis Lock 구현
-→ 복잡도·정합성·운영 비용 비교
-```
+## 6. 검증 상태
 
-Redis Session은 Token 인증을 선택하면 프로젝트 인증 문제의 직접 해법이 아닐 수 있으므로 인증 결정 이후 별도로 판단한다.
-
-## 6. 검증되지 않은 구성
-
-- Redis, QueryDSL, Flyway는 현재 Backend 의존성에 없다.
-- 독립 테스트 DB가 없어 현재 ApplicationContext 테스트가 실패한다.
-- OpenAPI의 공통 인증 보안 계약은 아직 확정되지 않았다.
-- 프론트 lint와 build는 로컬 Node 환경 부재로 최근 검증하지 못했다.
+실행 환경과 과거·최근 검증 결과는 [Phase 0](../10_Workspace/🚩%20Phase%200%20개발%20기준선.md)에서
+관리한다. 현재 API별 완료 여부는 API 구현 현황을 따른다. 이 문서의 목표 구조나
+설계 결정만으로 배포·인증·마이그레이션 구현 완료를 판단하지 않는다.

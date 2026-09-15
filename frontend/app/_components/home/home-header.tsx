@@ -42,19 +42,10 @@ export default function HomeHeader({
   const router = useRouter()
   const residentIdentifier = useMemo(() => {
     const roomNumberRaw = user?.roomDetails?.roomNumber?.trim()
-    const floorNo =
-      typeof user?.roomDetails?.floor === "number" ? user?.roomDetails?.floor : null
     const personalNo =
       typeof user?.roomDetails?.personalNo === "number" ? user?.roomDetails?.personalNo : null
 
-    let combinedRoom = roomNumberRaw ?? ""
-    if (floorNo != null && combinedRoom) {
-      combinedRoom = combinedRoom.startsWith(String(floorNo))
-        ? combinedRoom
-        : `${floorNo}${combinedRoom}`
-    } else if (floorNo != null && !combinedRoom) {
-      combinedRoom = String(floorNo)
-    }
+    const combinedRoom = roomNumberRaw ?? ""
 
     const roomWithPerson =
       combinedRoom && personalNo != null ? `${combinedRoom}-${personalNo}` : combinedRoom
@@ -69,7 +60,6 @@ export default function HomeHeader({
     user?.name,
     user?.roomDetails?.roomNumber,
     user?.roomDetails?.personalNo,
-    user?.roomDetails?.floor,
   ])
 
   const navigateToLogin = useCallback(() => {

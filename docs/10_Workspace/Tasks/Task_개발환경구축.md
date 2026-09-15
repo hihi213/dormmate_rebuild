@@ -1,8 +1,20 @@
 ---
 type: task
-status: 🟡 Doing
-created: <% tp.date.now("YYYY-MM-DD HH:mm") %>
+status: 참고 기록
+created: null
+updated: 2026-09-14
 ---
+
+# 개발환경 구축 — 초기 작업·학습 기록
+
+> 현재 적용 여부: 초기 체크리스트와 학습 키워드를 보존한 참고 문서다.
+> 생성일은 템플릿 치환값만 남아 확인할 수 없으며 임의로 추정하지 않는다.
+> 기존 체크 표시는 당시 수행 기록이며, 전체 Task가 완료됐다는 뜻이 아니다.
+
+현재 실행·재현 상태는 [Phase 0](../🚩%20Phase%200%20개발%20기준선.md),
+현재 구현은 [Slot Task](./Task_Slot%20조회%20및%20검증.md)를 따른다.
+아래 3~6장의 계층별 설명은 학습 참고이며 모든 계층을 선행 구현하는 순서가 아니다.
+명령·런타임·CORS 설정 방식은 현재 README·Tech Decisions와 대상 계약을 확인한다.
 
 ## 1. 개발 환경 구축 (Environment Setup)
 

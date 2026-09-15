@@ -3427,18 +3427,25 @@
         }
       },
       "RoomAssignmentResponse": {
+        "required": [
+          "floorNo",
+          "roomId",
+          "roomNumber"
+        ],
         "type": "object",
         "properties": {
           "roomId": {
             "type": "string",
             "format": "uuid"
           },
-          "floor": {
+          "floorNo": {
             "type": "integer",
-            "format": "int32"
+            "format": "int32",
+            "description": "호실 번호 문자열에서 파싱하지 않는 구조화된 층 번호"
           },
           "roomNumber": {
-            "type": "string"
+            "type": "string",
+            "description": "사용자에게 표시하는 호실 표기. 층 판정이나 정렬을 위해 문자열을 파싱하지 않는다."
           },
           "personalNo": {
             "type": "integer",

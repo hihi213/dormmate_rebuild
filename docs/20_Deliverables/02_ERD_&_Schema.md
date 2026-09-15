@@ -27,8 +27,11 @@ erDiagram
 | `Fridge` | Draft | Slot이 소속된 물리적 냉장고와 설치 층 |
 | `FridgeSlot` | Draft | Slot 메타데이터·상태·용량 |
 | `RoomSlotAssignment` | Draft | 호실의 현재 Slot 배정 |
-| `SlotManagerAssignment` | Draft | 냉장고 담당자의 현재 Slot 관리 배정 |
+| `SlotManagerAssignment` | Draft / Post-MVP | 후속 담당자·관리자 기능의 Slot 관리 배정 |
 | `FridgeBundle` | Partial | 활성 포장 수 집계를 위한 Slot 참조와 삭제 상태 |
+
+이 도표는 현재 조회 관계와 후속 관리 관계를 함께 보존한다. `SlotManagerAssignment`는
+일반 거주자 Slot Task의 구현 의무가 아니며 해당 확장에서 필요한 제약을 확정한다.
 
 `Partial`과 `Draft`는 전체 도메인 모델이 확정됐다는 의미가 아니다. 실제 JPA 매핑과 마이그레이션은 Task 설계·테스트와 함께 확정한다.
 
