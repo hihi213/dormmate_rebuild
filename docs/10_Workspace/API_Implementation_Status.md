@@ -49,7 +49,9 @@
 | GET | `/csrf` | MVP | Not Started | `AUTH-008`, `AUTH-013`; 로그인 화면 진입 시 토큰을 미리 발급 |
 | GET | `/profile/me` | MVP | Review Required | 응답 필수 필드 확정 필요 |
 
-온라인 회원가입 API는 현재 OpenAPI에 없으며 `AUTH-002` 결정 전 추가하지 않는다.
+온라인 회원가입과 관리자 계정 발급 API는 `AUTH-002`에 따라 MVP에서 제공하지
+않는다. 개발용 계정·호실·거주 관계는 개발환경 전용 seed로 준비하며, 이를 공개
+API 구현이나 운영환경 계정 공급 절차로 간주하지 않는다.
 기존 `/auth/refresh`는 세션 인증 MVP에서 사용하지 않는다. 기존 OpenAPI 계약의
 경로에는 `Post-MVP` 후보임을 표시했으며 `AUTH-011` 검토 전 구현하지 않는다.
 

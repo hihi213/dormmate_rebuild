@@ -25,8 +25,9 @@
 - fixture 모드에서는 인증 Guard를 우회할 수 있다.
 
 인증 방식 전환: Rebuild MVP는 `AUTH-001`에서 서버 세션만
-사용하고 토큰 인증은 `AUTH-011`의 Post-MVP 후보로 분리했다. `AUTH-002`와
-`AUTH-005`의 미결 세부 정책을 자동으로 확정하지 않는다.
+사용하고 토큰 인증은 `AUTH-011`의 Post-MVP 후보로 분리했다. `AUTH-002`에 따라
+온라인 회원가입과 관리자 계정 발급 API는 MVP에서 제공하지 않으며, `AUTH-005`의
+미결 세션 세부 정책을 자동으로 확정하지 않는다.
 모든 API 요청에는 세션 쿠키 전달을 위해 `credentials: include`를 기본 적용했다.
 로그인 요청은 `AUTH-012`에 따라 `deviceId` 없이 자격 증명만 보내고 응답
 `UserProfileResponse`로 화면 상태를 구성한다. Bearer 헤더, Access/Refresh
